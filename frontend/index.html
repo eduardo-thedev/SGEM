@@ -1,0 +1,2205 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SGEM – Sistema de Gestão do Efetivo Militar</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* ── Sidebar navy (inspirado na imagem) ── */
+  --sidebar-bg:    #1a2744;
+  --sidebar-hover: rgba(255,255,255,.08);
+  --sidebar-active:#2563eb;
+  --sidebar-text:  #a8bad8;
+  --sidebar-label: rgba(168,186,216,.55);
+  --sidebar-border:rgba(255,255,255,.07);
+  --brand-bg:      #2563eb;
+
+  /* ── Conteúdo claro ── */
+  --bg:       #f0f2f7;
+  --surface:  #ffffff;
+  --surface2: #f5f7fb;
+  --border:   #e2e7f0;
+  --border2:  #d0d7e6;
+
+  /* ── Texto ── */
+  --text:     #1e293b;
+  --text2:    #475569;
+  --muted:    #8898aa;
+
+  /* ── Topbar ── */
+  --topbar-bg:#ffffff;
+
+  /* ── Accent ── */
+  --accent:   #2563eb;
+  --accent-lt:#eff4ff;
+  --accent2:  #4f46e5;
+
+  /* ── Semânticas ── */
+  --green:    #10b981;
+  --green-lt: #ecfdf5;
+  --red:      #ef4444;
+  --red-lt:   #fef2f2;
+  --yellow:   #f59e0b;
+  --yellow-lt:#fffbeb;
+
+  --radius:   10px;
+  --shadow:   0 1px 4px rgba(30,41,59,.08), 0 4px 16px rgba(30,41,59,.05);
+  --shadow-md:0 4px 12px rgba(30,41,59,.12);
+  --sw:       230px;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);display:flex;height:100vh;overflow:hidden;font-size:14px}
+
+/* ══════════════════════════════════════
+   SIDEBAR  — navy escuro como na imagem
+══════════════════════════════════════ */
+.sidebar{
+  width:var(--sw);background:var(--sidebar-bg);
+  display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto;
+}
+.brand{
+  padding:20px 16px 18px;border-bottom:1px solid var(--sidebar-border);
+  display:flex;align-items:center;gap:11px;
+}
+.brand-logo{
+  width:36px;height:36px;background:var(--brand-bg);
+  border-radius:9px;display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:12px;color:#fff;flex-shrink:0;letter-spacing:-.3px;
+}
+.brand-name{font-weight:700;font-size:14px;color:#fff;line-height:1.2}
+.brand-sub{font-size:10px;color:var(--sidebar-text);margin-top:2px;line-height:1.3}
+
+.sb-sec{padding:16px 12px 4px}
+.sb-lbl{
+  font-size:10px;font-weight:600;color:var(--sidebar-label);
+  text-transform:uppercase;letter-spacing:.09em;padding:0 4px;margin-bottom:6px;
+}
+.nav-item{
+  display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:8px;
+  cursor:pointer;color:var(--sidebar-text);font-size:13px;font-weight:500;
+  transition:background .15s,color .15s;user-select:none;margin-bottom:1px;
+}
+.nav-item:hover{background:var(--sidebar-hover);color:#fff}
+.nav-item.active{background:var(--sidebar-active);color:#fff}
+.ni{font-size:15px;width:18px;text-align:center;flex-shrink:0;opacity:.85}
+.nav-item.active .ni{opacity:1}
+
+.sb-bottom{
+  margin-top:auto;border-top:1px solid var(--sidebar-border);padding:16px 12px;
+}
+.api-st{
+  font-size:11px;color:var(--sidebar-text);display:flex;align-items:center;
+  gap:6px;margin-bottom:10px;
+}
+.api-dot{width:7px;height:7px;border-radius:50%;background:var(--red);transition:background .3s;flex-shrink:0}
+.api-dot.on{background:var(--green)}
+.unit-info{font-size:12px;color:#fff;font-weight:600}
+.unit-sub{font-size:11px;color:var(--sidebar-text);margin-top:2px}
+
+/* ══════════════════════════════════════
+   TOPBAR + LAYOUT PRINCIPAL
+══════════════════════════════════════ */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 28px;height:60px;border-bottom:1px solid var(--border);
+  background:var(--topbar-bg);flex-shrink:0;
+  box-shadow:0 1px 3px rgba(30,41,59,.06);
+}
+.topbar-title{font-size:17px;font-weight:700;color:var(--text)}
+.topbar-right{display:flex;align-items:center;gap:10px}
+
+/* ══════════════════════════════════════
+   BOTÕES
+══════════════════════════════════════ */
+.btn{
+  padding:8px 18px;border-radius:8px;border:none;cursor:pointer;
+  font-size:13px;font-weight:500;font-family:inherit;
+  transition:filter .15s,box-shadow .15s;
+}
+.btn:hover{filter:brightness(1.07);box-shadow:var(--shadow-md)}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-ghost{
+  background:var(--surface2);color:var(--text2);
+  border:1px solid var(--border);
+}
+.btn-ghost:hover{background:var(--border)}
+.btn-danger{
+  background:var(--red-lt);color:var(--red);
+  border:1px solid rgba(239,68,68,.25);
+}
+.btn-sm{padding:6px 14px;font-size:12px}
+.btn-xs{padding:3px 10px;font-size:11px;border-radius:6px}
+
+.content{flex:1;overflow-y:auto;padding:24px 28px;background:var(--bg)}
+.page{display:none}
+.page.active{display:block;animation:fadein .2s ease}
+@keyframes fadein{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+/* ══════════════════════════════════════
+   KPI CARDS  — brancos com sombra sutil
+══════════════════════════════════════ */
+.kpi-grid{display:grid;gap:16px;margin-bottom:22px}
+.kpi-grid-4{grid-template-columns:repeat(4,1fr)}
+.kpi-grid-3{grid-template-columns:repeat(3,1fr)}
+
+.kpi-card{
+  background:var(--surface);border-radius:var(--radius);
+  padding:18px 20px;box-shadow:var(--shadow);
+  border:1px solid var(--border);transition:box-shadow .2s,transform .2s;
+  position:relative;overflow:hidden;
+}
+.kpi-card:hover{box-shadow:var(--shadow-md);transform:translateY(-1px)}
+
+/* Barra colorida no topo de cada card */
+.kpi-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:var(--radius) var(--radius) 0 0;
+}
+.kpi-card.blue::before  {background:var(--accent)}
+.kpi-card.green::before {background:var(--green)}
+.kpi-card.red::before   {background:var(--red)}
+.kpi-card.yellow::before{background:var(--yellow)}
+
+.kpi-label{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
+.kpi-value{font-size:30px;font-weight:700;font-family:'DM Mono',monospace;line-height:1;color:var(--text)}
+.kpi-sub{font-size:11px;color:var(--muted);margin-top:6px}
+
+/* ══════════════════════════════════════
+   CARD GENÉRICO
+══════════════════════════════════════ */
+.card{
+  background:var(--surface);border-radius:var(--radius);padding:20px;
+  box-shadow:var(--shadow);border:1px solid var(--border);
+}
+.card-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.card-title{font-size:14px;font-weight:600;color:var(--text)}
+
+/* ══════════════════════════════════════
+   GRÁFICO DE BARRAS
+══════════════════════════════════════ */
+.bar-chart{display:flex;flex-direction:column;gap:9px}
+.bar-row{display:flex;align-items:center;gap:10px;font-size:12px}
+.bar-label{width:110px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:right;flex-shrink:0}
+.bar-track{flex:1;height:12px;background:var(--surface2);border-radius:99px;overflow:hidden;border:1px solid var(--border)}
+.bar-fill{height:100%;border-radius:99px;display:flex}
+.bar-pos{background:var(--green);height:100%}
+.bar-neg{background:var(--red);height:100%}
+.bar-val{font-size:11px;color:var(--muted);width:44px;text-align:left;flex-shrink:0}
+
+/* ══════════════════════════════════════
+   TABELA
+══════════════════════════════════════ */
+.tw{
+  background:var(--surface);border-radius:var(--radius);
+  box-shadow:var(--shadow);border:1px solid var(--border);overflow:hidden;
+}
+.tw-hd{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 18px;border-bottom:1px solid var(--border);
+  flex-wrap:wrap;gap:10px;background:var(--surface);
+}
+.filter-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+
+.fsel{
+  background:var(--surface2);border:1px solid var(--border2);
+  color:var(--text);border-radius:7px;padding:6px 10px;
+  font-size:12px;font-family:inherit;
+}
+.fsel:focus{outline:none;border-color:var(--accent)}
+.fsrch{
+  background:var(--surface2);border:1px solid var(--border2);
+  color:var(--text);border-radius:7px;padding:6px 12px;
+  font-size:12px;font-family:inherit;width:210px;
+}
+.fsrch:focus{outline:none;border-color:var(--accent)}
+.fsrch::placeholder{color:var(--muted)}
+
+table{width:100%;border-collapse:collapse}
+thead th{
+  text-align:left;font-size:11px;font-weight:600;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.06em;padding:11px 16px;
+  background:var(--surface2);border-bottom:1px solid var(--border);white-space:nowrap;
+}
+tbody tr{border-bottom:1px solid var(--border);transition:background .1s;cursor:pointer}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:#f0f5ff}
+tbody td{padding:11px 16px;font-size:13px;color:var(--text);vertical-align:middle}
+tfoot td{padding:12px 16px;font-weight:600;border-top:2px solid var(--border);font-size:12px;color:var(--muted);background:var(--surface2)}
+.empty td{text-align:center;color:var(--muted);padding:52px 20px;font-size:13px}
+
+.row-acts{display:flex;gap:3px;opacity:0;transition:opacity .15s}
+tbody tr:hover .row-acts{opacity:1}
+.row-btn{
+  background:none;border:none;color:var(--muted);cursor:pointer;
+  font-size:14px;padding:3px 6px;border-radius:5px;
+  transition:background .12s,color .12s;
+}
+.row-btn:hover{background:var(--surface2);color:var(--accent)}
+
+/* ══════════════════════════════════════
+   PILLS / BADGES
+══════════════════════════════════════ */
+.pill{
+  display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;
+  border-radius:99px;padding:3px 9px;white-space:nowrap;
+  text-transform:uppercase;letter-spacing:.04em;border:1px solid transparent;
+}
+.pill.vigente {background:#ecfdf5;color:#059669;border-color:#a7f3d0}
+.pill.vencida {background:#f1f5f9;color:#64748b;border-color:#cbd5e1}
+.pill.futura  {background:#fffbeb;color:#d97706;border-color:#fde68a}
+.pill.positivo{background:#ecfdf5;color:#059669;border-color:#a7f3d0}
+.pill.negativo{background:#fef2f2;color:#dc2626;border-color:#fecaca}
+
+/* ══════════════════════════════════════
+   MODAL
+══════════════════════════════════════ */
+.backdrop{
+  position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:200;
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .2s;padding:16px;
+  backdrop-filter:blur(2px);
+}
+.backdrop.open{opacity:1;pointer-events:all}
+.modal{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:14px;padding:28px;width:680px;max-width:100%;
+  max-height:90vh;overflow-y:auto;
+  box-shadow:0 20px 60px rgba(15,23,42,.2);
+  transform:translateY(20px) scale(.98);transition:transform .22s;position:relative;
+}
+.backdrop.open .modal{transform:none}
+.modal-wide{width:880px}
+.modal-hd{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:22px;position:sticky;top:0;background:var(--surface);
+  padding-bottom:14px;border-bottom:1px solid var(--border);z-index:1;
+}
+.modal-title{font-size:17px;font-weight:700;color:var(--text)}
+.modal-x{
+  background:none;border:none;color:var(--muted);cursor:pointer;
+  font-size:20px;padding:2px 6px;border-radius:6px;line-height:1;
+}
+.modal-x:hover{background:var(--surface2);color:var(--text)}
+
+.sec-title{
+  font-size:10px;font-weight:700;color:var(--accent);
+  text-transform:uppercase;letter-spacing:.08em;
+  margin:20px 0 12px;padding-bottom:7px;border-bottom:2px solid var(--accent-lt);
+}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.form-grid-3{grid-template-columns:1fr 1fr 1fr}
+.fg{display:flex;flex-direction:column;gap:5px}
+.fg.span2{grid-column:1/-1}
+.fg.span3{grid-column:1/-1}
+.flbl{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;font-weight:600}
+.fctrl{
+  background:var(--surface2);border:1.5px solid var(--border2);color:var(--text);
+  border-radius:8px;padding:9px 12px;font-size:13px;font-family:inherit;
+  transition:border-color .15s,box-shadow .15s;width:100%;
+}
+.fctrl:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+.fctrl.err{border-color:var(--red);box-shadow:0 0 0 3px rgba(239,68,68,.1)}
+.ferr{font-size:11px;color:var(--red);display:none}
+.ferr.show{display:block}
+.modal-ft{
+  display:flex;gap:10px;justify-content:flex-end;margin-top:22px;
+  padding-top:16px;border-top:1px solid var(--border);
+  position:sticky;bottom:0;background:var(--surface);
+}
+
+/* ══════════════════════════════════════
+   FOTO UPLOAD
+══════════════════════════════════════ */
+.foto-wrap{display:flex;flex-direction:column;align-items:center;gap:10px}
+.foto-preview{
+  width:100px;height:120px;border-radius:10px;border:2px dashed var(--border2);
+  background:var(--surface2);display:flex;align-items:center;justify-content:center;
+  color:var(--muted);font-size:28px;cursor:pointer;overflow:hidden;position:relative;
+  transition:border-color .2s;
+}
+.foto-preview:hover{border-color:var(--accent)}
+.foto-preview img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
+.foto-label{font-size:11px;color:var(--muted);text-align:center;cursor:pointer}
+.foto-label:hover{color:var(--accent)}
+
+/* ══════════════════════════════════════
+   FICHA DO MILITAR
+══════════════════════════════════════ */
+.ficha-top{display:flex;gap:24px;margin-bottom:24px;align-items:flex-start}
+.ficha-foto{
+  width:110px;height:130px;border-radius:10px;border:2px solid var(--border);
+  background:var(--surface2);display:flex;align-items:center;justify-content:center;
+  color:var(--muted);font-size:40px;flex-shrink:0;overflow:hidden;position:relative;
+  box-shadow:var(--shadow);
+}
+.ficha-foto img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
+.ficha-info{flex:1}
+.ficha-num{
+  font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;
+  margin-bottom:4px;letter-spacing:.04em;
+}
+.ficha-nome{font-size:22px;font-weight:700;color:var(--text);line-height:1.15}
+.ficha-guerra{font-size:15px;color:var(--accent);font-weight:700;margin-top:4px;letter-spacing:.02em}
+.ficha-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-top:16px}
+.ficha-field{background:var(--surface2);border-radius:8px;padding:10px 12px;border:1px solid var(--border)}
+.ficha-field label{font-size:10px;color:var(--muted);text-transform:uppercase;font-weight:600;letter-spacing:.05em;display:block;margin-bottom:4px}
+.ficha-field span{font-size:13px;font-weight:500;color:var(--text)}
+
+/* ══════════════════════════════════════
+   FO CARDS
+══════════════════════════════════════ */
+.fo-list{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.fo-card{
+  border-radius:8px;padding:12px 14px;border-left:4px solid;
+  border-top:1px solid;border-right:1px solid;border-bottom:1px solid;
+}
+.fo-card.positivo{background:var(--green-lt);border-left-color:var(--green);border-color:var(--green-lt) #a7f3d0 #a7f3d0 var(--green)}
+.fo-card.negativo{background:var(--red-lt);border-left-color:var(--red);border-color:var(--red-lt) #fecaca #fecaca var(--red)}
+.fo-card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px}
+.fo-card-date{font-size:11px;color:var(--muted)}
+.fo-desc{font-size:13px;color:var(--text)}
+
+/* ══════════════════════════════════════
+   LNC CARDS
+══════════════════════════════════════ */
+.lnc-card{
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:8px;padding:12px 14px;
+  display:flex;align-items:center;gap:12px;margin-bottom:8px;
+}
+.lnc-dates{flex:1;font-size:12px;color:var(--text2);font-family:'DM Mono',monospace}
+.lnc-motivo{font-size:12px;color:var(--muted);margin-top:3px;font-style:italic}
+
+/* ══════════════════════════════════════
+   GRID DE RECRUTAS
+══════════════════════════════════════ */
+.recrutas-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px}
+.rec-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:16px;cursor:pointer;box-shadow:var(--shadow);
+  transition:box-shadow .2s,transform .15s,border-color .2s;
+  display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;
+}
+.rec-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px);border-color:var(--accent)}
+.rec-card-foto{
+  width:64px;height:76px;border-radius:8px;background:var(--surface2);
+  border:1px solid var(--border);display:flex;align-items:center;justify-content:center;
+  color:var(--muted);font-size:24px;overflow:hidden;position:relative;flex-shrink:0;
+}
+.rec-card-foto img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
+.rec-card-num{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;letter-spacing:.04em}
+.rec-card-nome{font-size:13px;font-weight:600;color:var(--text);line-height:1.2}
+.rec-card-guerra{font-size:12px;color:var(--accent);font-weight:600}
+
+/* ══════════════════════════════════════
+   TABS
+══════════════════════════════════════ */
+.tab-grp{display:flex;gap:3px;background:var(--surface2);border-radius:8px;padding:3px;border:1px solid var(--border)}
+.tab-btn{
+  padding:6px 14px;border-radius:6px;border:none;background:transparent;
+  color:var(--text2);font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;
+  transition:background .15s,color .15s;
+}
+.tab-btn:hover{background:rgba(37,99,235,.06);color:var(--accent)}
+.tab-btn.active{background:var(--surface);color:var(--accent);font-weight:600;box-shadow:0 1px 3px rgba(30,41,59,.1)}
+
+/* ══════════════════════════════════════
+   VIEW TOGGLE
+══════════════════════════════════════ */
+.view-toggle{
+  display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden;
+  background:var(--surface2);
+}
+.vt-btn{
+  padding:6px 11px;border:none;background:transparent;color:var(--muted);
+  cursor:pointer;font-size:15px;transition:background .15s,color .15s;
+}
+.vt-btn.active{background:var(--accent);color:#fff}
+
+/* ══════════════════════════════════════
+   TOAST
+══════════════════════════════════════ */
+.toast{
+  position:fixed;bottom:24px;right:24px;padding:12px 18px;border-radius:10px;
+  font-size:13px;font-weight:600;opacity:0;transform:translateY(10px);
+  transition:opacity .25s,transform .25s;z-index:999;pointer-events:none;max-width:340px;
+  box-shadow:var(--shadow-md);
+}
+.toast.success{background:var(--green);color:#fff}
+.toast.error  {background:var(--red);color:#fff}
+.toast.info   {background:var(--accent);color:#fff}
+.toast.show   {opacity:1;transform:none}
+
+/* ══════════════════════════════════════
+   WIP
+══════════════════════════════════════ */
+.wip{text-align:center;padding:80px 40px;color:var(--muted)}
+.wip-icon{font-size:52px;margin-bottom:14px;opacity:.6}
+.wip-title{font-size:18px;font-weight:700;color:var(--text2);margin-bottom:6px}
+.wip-sub{font-size:13px;color:var(--muted);max-width:360px;margin:0 auto;line-height:1.6}
+
+/* ══════════════════════════════════════
+   SCROLLBAR
+══════════════════════════════════════ */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:99px}
+::-webkit-scrollbar-thumb:hover{background:var(--muted)}
+
+/* ══════════════════════════════════════
+   IMPORTAÇÃO — MODAL & DROP ZONE
+══════════════════════════════════════ */
+.import-tabs{display:flex;gap:0;border:1px solid var(--border);border-radius:9px;overflow:hidden;margin-bottom:20px}
+.import-tab{flex:1;padding:10px;border:none;background:var(--surface2);color:var(--text2);font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;transition:background .15s,color .15s;display:flex;align-items:center;justify-content:center;gap:7px}
+.import-tab:not(:last-child){border-right:1px solid var(--border)}
+.import-tab.active{background:var(--accent);color:#fff}
+.import-panel{display:none}
+.import-panel.active{display:block}
+
+.drop-zone{
+  border:2px dashed var(--border2);border-radius:10px;padding:36px 24px;
+  text-align:center;cursor:pointer;transition:border-color .2s,background .2s;
+  background:var(--surface2);
+}
+.drop-zone:hover,.drop-zone.drag{border-color:var(--accent);background:var(--accent-lt)}
+.drop-zone-icon{font-size:36px;margin-bottom:10px;opacity:.6}
+.drop-zone-text{font-size:14px;font-weight:600;color:var(--text2);margin-bottom:4px}
+.drop-zone-sub{font-size:12px;color:var(--muted)}
+
+.col-map-table{width:100%;border-collapse:collapse;margin-top:12px}
+.col-map-table th{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;padding:8px 10px;background:var(--surface2);border-bottom:1px solid var(--border);text-align:left}
+.col-map-table td{padding:7px 10px;border-bottom:1px solid var(--border);font-size:13px}
+.col-map-table tr:last-child td{border-bottom:none}
+.col-map-sel{background:var(--surface2);border:1px solid var(--border2);color:var(--text);border-radius:6px;padding:5px 8px;font-size:12px;font-family:inherit;width:100%}
+
+.preview-table-wrap{max-height:220px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;margin-top:12px}
+.preview-table{width:100%;border-collapse:collapse;font-size:12px}
+.preview-table th{background:var(--surface2);padding:7px 10px;text-align:left;font-weight:600;color:var(--muted);border-bottom:1px solid var(--border);white-space:nowrap;position:sticky;top:0}
+.preview-table td{padding:6px 10px;border-bottom:1px solid var(--border);white-space:nowrap;max-width:160px;overflow:hidden;text-overflow:ellipsis}
+.preview-table tr:last-child td{border-bottom:none}
+
+.import-result{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-top:14px;font-size:13px;display:none}
+.import-result.show{display:block}
+.import-result .ok {color:var(--green);font-weight:600}
+.import-result .err{color:var(--red);font-weight:600}
+
+.forms-url-row{display:flex;gap:8px;margin-bottom:14px}
+.forms-url-input{flex:1;background:var(--surface2);border:1.5px solid var(--border2);color:var(--text);border-radius:8px;padding:9px 12px;font-size:13px;font-family:inherit}
+.forms-url-input:focus{outline:none;border-color:var(--accent)}
+
+.step-badge{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:22px;height:22px;border-radius:50%;background:var(--accent);
+  color:#fff;font-size:11px;font-weight:700;flex-shrink:0;
+}
+.step-row{display:flex;align-items:flex-start;gap:10px;margin-bottom:12px;font-size:13px;color:var(--text2);line-height:1.5}
+
+/* ══════════════════════════════════════
+   RESPONSIVO — MOBILE FIRST
+══════════════════════════════════════ */
+
+/* Base mobile (< 640px) — tudo em coluna única */
+@media (max-width: 639px) {
+  :root{ --sw: 100%; }
+
+  body{ flex-direction:column }
+
+  .sidebar{
+    width:100%;height:auto;flex-direction:row;flex-wrap:wrap;
+    padding:0;overflow-x:auto;overflow-y:hidden;flex-shrink:0;
+    border-right:none;border-bottom:1px solid var(--sidebar-border);
+  }
+  .brand{
+    padding:12px 14px;border-bottom:none;border-right:1px solid var(--sidebar-border);
+    flex-shrink:0;
+  }
+  .brand-sub{ display:none }
+  .sb-sec{ display:flex;gap:2px;padding:8px 6px;flex-wrap:nowrap;align-items:center }
+  .sb-lbl{ display:none }
+  .nav-item{ padding:7px 10px;white-space:nowrap;border-radius:6px;font-size:12px }
+  .sb-bottom{ display:none }
+
+  .topbar{ padding:0 14px;height:52px }
+  .topbar-title{ font-size:15px }
+  #topbar-date{ display:none }
+
+  .content{ padding:14px }
+
+  .kpi-grid-4{ grid-template-columns:1fr 1fr }
+  .kpi-card{ padding:13px 14px }
+  .kpi-value{ font-size:22px }
+
+  /* Gráficos lado a lado → coluna */
+  div[style*="grid-template-columns:1fr 1fr"]{
+    grid-template-columns:1fr !important;
+  }
+
+  /* Tabela: esconde colunas menos importantes */
+  .hide-mobile{ display:none !important }
+
+  /* Filtros empilhados */
+  .filter-row{ flex-direction:column;align-items:stretch }
+  .fsrch,.fsel{ width:100% }
+  .tw-hd{ flex-direction:column;align-items:stretch;gap:8px }
+
+  /* Listagem header empilhado */
+  #page-listagem > div:first-child{ flex-direction:column;align-items:stretch;gap:12px }
+  #page-listagem > div:first-child > div:last-child{ flex-wrap:wrap }
+
+  /* Modais full-screen no mobile */
+  .modal,.modal-wide{ width:100%;border-radius:0;padding:18px;max-height:100vh;border:none }
+  .backdrop{ padding:0;align-items:flex-end }
+  .backdrop.open .modal{ border-radius:16px 16px 0 0 }
+
+  /* Forms de cadastro: 1 coluna */
+  .form-grid,.form-grid-3{ grid-template-columns:1fr }
+  .fg.span2,.fg.span3{ grid-column:1 }
+
+  /* Ficha topo: empilha foto + info */
+  .ficha-top{ flex-direction:column;align-items:center;text-align:center }
+  .ficha-grid{ grid-template-columns:1fr 1fr }
+
+  /* Tabs: scroll horizontal */
+  .tab-grp{ overflow-x:auto;padding-bottom:2px }
+  .tab-btn{ white-space:nowrap;font-size:11px;padding:5px 10px }
+
+  /* Grid de recrutas: 2 colunas */
+  .recrutas-grid{ grid-template-columns:repeat(2,1fr) }
+
+  /* Import modal */
+  .import-tabs{ flex-direction:column }
+  .import-tab:not(:last-child){ border-right:none;border-bottom:1px solid var(--border) }
+
+  /* Painel charts */
+  .charts-mobile-col{ flex-direction:column }
+
+  /* View toggle e botão juntos */
+  .listagem-actions{ flex-wrap:wrap;gap:6px }
+}
+
+/* Tablet (640px – 1023px) */
+@media (min-width:640px) and (max-width:1023px) {
+  :root{ --sw: 200px }
+
+  .content{ padding:18px 20px }
+  .kpi-grid-4{ grid-template-columns:repeat(2,1fr) }
+  .kpi-value{ font-size:24px }
+
+  .form-grid-3{ grid-template-columns:1fr 1fr }
+  .fg.span3{ grid-column:1/-1 }
+
+  .ficha-grid{ grid-template-columns:1fr 1fr }
+  .recrutas-grid{ grid-template-columns:repeat(3,1fr) }
+
+  .brand-logo{ width:30px;height:30px;font-size:10px }
+  .brand-name{ font-size:13px }
+  .brand-sub{ font-size:9px }
+  .nav-item{ font-size:12px;padding:7px 9px }
+}
+
+/* Desktop pleno (≥ 1024px) — comportamento original */
+@media (min-width:1024px) {
+  .kpi-grid-4{ grid-template-columns:repeat(4,1fr) }
+}
+/* Esconde colunas geradas por JS no mobile (foto=1, tel=5, fo=6, lnc=7) */
+@media (max-width: 639px) {
+  #lista-tbody tr td:nth-child(1),
+  #lista-tbody tr td:nth-child(5),
+  #lista-tbody tr td:nth-child(6),
+  #lista-tbody tr td:nth-child(7) { display:none }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════ SIDEBAR ═══════ -->
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-logo">SGEM</div>
+    <div>
+      <div class="brand-name">SGEM</div>
+      <div class="brand-sub">Gestão do Efetivo Militar</div>
+    </div>
+  </div>
+
+  <div class="sb-sec">
+    <div class="sb-lbl">Principal</div>
+    <div class="nav-item active" data-page="painel"><span class="ni">▦</span> Painel</div>
+  </div>
+
+  <div class="sb-sec">
+    <div class="sb-lbl">Efetivo</div>
+    <div class="nav-item" data-page="listagem"><span class="ni">👥</span> Listagem</div>
+    <div class="nav-item" data-page="lnc"><span class="ni">📋</span> Sem Dispensa (LNC)</div>
+    <div class="nav-item" data-page="fatos"><span class="ni">📝</span> Fatos Observados (FO)</div>
+  </div>
+
+  <div class="sb-sec">
+    <div class="sb-lbl">Sistema</div>
+    <div class="nav-item" data-page="configuracoes"><span class="ni">⚙</span> Configurações</div>
+    <div class="nav-item" data-page="ajuda"><span class="ni">❓</span> Ajuda</div>
+  </div>
+
+  <div class="sb-bottom">
+    <div class="api-st">
+      <span class="api-dot" id="api-dot"></span>
+      <span id="api-txt">Conectando…</span>
+    </div>
+    <div class="unit-info" id="unit-name">Unidade Militar</div>
+    <div class="unit-sub" id="unit-total">— militares cadastrados</div>
+  </div>
+</aside>
+
+<!-- ═══════ MAIN ═══════ -->
+<main class="main">
+  <div class="topbar">
+    <span class="topbar-title" id="topbar-title">Painel</span>
+    <div class="topbar-right">
+      <span id="topbar-date" style="font-size:12px;color:var(--muted)"></span>
+      <button class="btn btn-primary btn-sm" id="btn-add-recruta" style="display:none" onclick="abrirModalRecrutar()">+ Adicionar Militar</button>
+    </div>
+  </div>
+  <div class="content">
+
+    <!-- ════ PAINEL ════ -->
+    <div class="page active" id="page-painel">
+      <!-- KPIs -->
+      <div class="kpi-grid kpi-grid-4">
+        <div class="kpi-card blue">
+          <div class="kpi-label">Total de Recrutas</div>
+          <div class="kpi-value" id="kpi-total" style="color:var(--accent)">0</div>
+          <div class="kpi-sub">militares cadastrados</div>
+        </div>
+        <div class="kpi-card yellow">
+          <div class="kpi-label">Sem Dispensa (LNC)</div>
+          <div class="kpi-value" id="kpi-lnc" style="color:var(--yellow)">0</div>
+          <div class="kpi-sub">dispensas ativas agora</div>
+        </div>
+        <div class="kpi-card green">
+          <div class="kpi-label">FO Positivos</div>
+          <div class="kpi-value" id="kpi-fop" style="color:var(--green)">0</div>
+          <div class="kpi-sub">fatos observados +</div>
+        </div>
+        <div class="kpi-card red">
+          <div class="kpi-label">FO Negativos</div>
+          <div class="kpi-value" id="kpi-fon" style="color:var(--red)">0</div>
+          <div class="kpi-sub">fatos observados −</div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:22px">
+        <!-- Gráfico FO por recruta -->
+        <div class="card">
+          <div class="card-hd">
+            <div class="card-title">Desempenho por Recruta (FO)</div>
+          </div>
+          <div class="bar-chart" id="chart-fo"></div>
+        </div>
+
+        <!-- LNCs ativas -->
+        <div class="card">
+          <div class="card-hd">
+            <div class="card-title">Dispensas Recentes / Ativas (LNC)</div>
+          </div>
+          <div id="painel-lnc-list" style="display:flex;flex-direction:column;gap:8px"></div>
+        </div>
+      </div>
+
+      <!-- Últimos cadastrados -->
+      <div class="tw">
+        <div class="tw-hd">
+          <div style="font-size:14px;font-weight:600">Últimos Recrutas Cadastrados</div>
+          <button class="btn btn-ghost btn-sm" onclick="navTo('listagem')">Ver todos →</button>
+        </div>
+        <table>
+          <thead><tr><th>Nº ID</th><th>Nome Completo</th><th>Nome de Guerra</th><th>Cadastrado em</th></tr></thead>
+          <tbody id="painel-recentes"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ════ LISTAGEM ════ -->
+    <div class="page" id="page-listagem">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px">
+        <div>
+          <div style="font-size:22px;font-weight:700">Listagem do Efetivo</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px">Cadastro completo de militares</div>
+        </div>
+        <div class="listagem-actions" style="display:flex;gap:8px;align-items:center">
+          <div class="view-toggle">
+            <button class="vt-btn active" id="vt-lista" onclick="setView('lista')" title="Lista">☰</button>
+            <button class="vt-btn" id="vt-grid" onclick="setView('grid')" title="Grade">⊞</button>
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="abrirModal('modal-import-bd')" style="display:flex;align-items:center;gap:5px">
+            <span>⬆</span> Importar
+          </button>
+          <button class="btn btn-primary" onclick="abrirModalRecrutar()">+ Adicionar Militar</button>
+        </div>
+      </div>
+
+      <!-- Filtros -->
+      <div class="tw">
+        <div class="tw-hd">
+          <div class="filter-row">
+            <input class="fsrch" id="busca" placeholder="🔍 Buscar por nome, número, CPF, telefone…" oninput="carregarListagem()">
+            <select class="fsel" id="order" onchange="carregarListagem()">
+              <option value="nome_completo">Ordenar: A–Z (Nome)</option>
+              <option value="nome_guerra">Ordenar: A–Z (Guerra)</option>
+              <option value="numero_id">Ordenar: Número ID</option>
+              <option value="criado_em">Ordenar: Mais recente</option>
+            </select>
+          </div>
+          <div id="listagem-count" style="font-size:12px;color:var(--muted)"></div>
+        </div>
+
+        <!-- VISTA LISTA -->
+        <div id="view-lista">
+          <table>
+            <thead><tr>
+              <th style="width:50px" class="hide-mobile">Foto</th>
+              <th>Nº ID</th>
+              <th>Nome Completo</th>
+              <th>Nome de Guerra</th>
+              <th class="hide-mobile">Telefone</th>
+              <th class="hide-mobile">FO</th>
+              <th class="hide-mobile">LNC</th>
+              <th style="width:80px"></th>
+            </tr></thead>
+            <tbody id="lista-tbody"></tbody>
+          </table>
+        </div>
+
+        <!-- VISTA GRID -->
+        <div id="view-grid" style="display:none;padding:18px">
+          <div class="recrutas-grid" id="grid-container"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ LNC ════ -->
+    <div class="page" id="page-lnc">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+        <div>
+          <div style="font-size:22px;font-weight:700">📋 Sem Dispensa – LNC</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px">Licenças Não Concedidas registradas no efetivo</div>
+        </div>
+      </div>
+      <div class="tw">
+        <div class="tw-hd">
+          <div class="tab-grp">
+            <button class="tab-btn active" id="lnc-tab-todas" onclick="setLncTab('todas')">Todas</button>
+            <button class="tab-btn" id="lnc-tab-vigente" onclick="setLncTab('vigente')">Vigentes</button>
+            <button class="tab-btn" id="lnc-tab-vencida" onclick="setLncTab('vencida')">Vencidas</button>
+          </div>
+        </div>
+        <table>
+          <thead><tr>
+            <th>Recruta</th><th>Nome de Guerra</th><th>Nº ID</th>
+            <th>Início</th><th>Término</th><th>Motivo</th><th>Situação</th>
+          </tr></thead>
+          <tbody id="lnc-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ════ FATOS ════ -->
+    <div class="page" id="page-fatos">
+      <div style="font-size:22px;font-weight:700;margin-bottom:4px">📝 Fatos Observados (FO)</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:20px">Registro de fatos positivos e negativos por recruta</div>
+      <div class="tw">
+        <div class="tw-hd">
+          <div class="tab-grp">
+            <button class="tab-btn active" id="fo-tab-todos" onclick="setFoTab('todos')">Todos</button>
+            <button class="tab-btn" id="fo-tab-positivo" onclick="setFoTab('positivo')">✅ Positivos</button>
+            <button class="tab-btn" id="fo-tab-negativo" onclick="setFoTab('negativo')">⚠ Negativos</button>
+          </div>
+        </div>
+        <table>
+          <thead><tr><th>Data</th><th>Recruta</th><th>Nome de Guerra</th><th>Tipo</th><th>Descrição</th></tr></thead>
+          <tbody id="fo-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ════ WIP PAGES ════ -->
+    <div class="page" id="page-configuracoes"><div class="wip"><div class="wip-icon">⚙</div><div class="wip-title">Configurações</div><div class="wip-sub">Em breve: nome da unidade, tema, exportação de dados.</div></div></div>
+    <div class="page" id="page-ajuda"><div class="wip"><div class="wip-icon">❓</div><div class="wip-title">Ajuda</div><div class="wip-sub">Em breve: manual de uso do sistema SGR.</div></div></div>
+
+  </div><!-- /content -->
+</main>
+
+<!-- ═══════ MODAL: IMPORTAR ═══════ -->
+<div class="backdrop" id="modal-import-bd">
+ <div class="modal modal-wide" style="max-width:780px">
+  <div class="modal-hd">
+    <div class="modal-title">⬆ Importar Militares</div>
+    <button class="modal-x" onclick="fecharModal('modal-import-bd')">✕</button>
+  </div>
+
+  <!-- Tabs: Forms / Planilha -->
+  <div class="import-tabs">
+    <button class="import-tab active" id="itab-forms" onclick="setImportTab('forms')">
+      📋 Google Forms / Planilha Google
+    </button>
+    <button class="import-tab" id="itab-csv" onclick="setImportTab('csv')">
+      📄 Arquivo CSV / Excel
+    </button>
+  </div>
+
+  <!-- ── PAINEL: GOOGLE FORMS / SHEETS ── -->
+  <div class="import-panel active" id="ipanel-forms">
+    <div style="background:var(--accent-lt);border:1px solid #bfdbfe;border-radius:8px;padding:14px 16px;margin-bottom:18px;font-size:13px;color:var(--accent)">
+      <strong>Como funciona:</strong> cole abaixo o link da planilha de respostas do Google Forms (Google Sheets) publicada como CSV, ou cole o link da planilha normal com permissão de leitura pública.
+    </div>
+
+    <div class="step-row"><span class="step-badge">1</span>
+      <span>No Google Sheets, clique em <strong>Arquivo → Compartilhar → Publicar na web</strong>. Escolha a aba desejada e formato <strong>CSV</strong>. Copie o link gerado.</span>
+    </div>
+    <div class="step-row"><span class="step-badge">2</span>
+      <span>Cole o link abaixo. O SGEM lerá cada linha automaticamente e mapeará os dados para os campos corretos.</span>
+    </div>
+    <div class="step-row"><span class="step-badge">3</span>
+      <span>Revise a prévia, ajuste o mapeamento de colunas se necessário e clique em <strong>Importar</strong>.</span>
+    </div>
+
+    <div class="forms-url-row">
+      <input class="forms-url-input" id="sheets-url" placeholder="https://docs.google.com/spreadsheets/d/…/pub?output=csv  ou  link CSV público">
+      <button class="btn btn-primary" onclick="buscarSheets()">Buscar →</button>
+    </div>
+
+    <div id="sheets-preview" style="display:none">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div style="font-size:13px;font-weight:600;color:var(--text)">Prévia dos dados <span id="sheets-count" style="color:var(--muted);font-weight:400"></span></div>
+        <div style="font-size:11px;color:var(--muted)">Verifique o mapeamento de colunas abaixo</div>
+      </div>
+
+      <!-- Mapeamento de colunas -->
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:10px">
+        <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Mapeamento de Colunas</div>
+        <div id="col-mapping" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px"></div>
+      </div>
+
+      <div class="preview-table-wrap">
+        <table class="preview-table">
+          <thead id="preview-thead"></thead>
+          <tbody id="preview-tbody"></tbody>
+        </table>
+      </div>
+
+      <div class="import-result" id="sheets-result"></div>
+
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px;padding-top:14px;border-top:1px solid var(--border)">
+        <button class="btn btn-ghost" onclick="resetImportSheets()">↺ Limpar</button>
+        <button class="btn btn-primary" id="btn-import-sheets" onclick="importarSheets()">
+          ⬆ Importar <span id="sheets-import-count"></span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PAINEL: CSV / EXCEL ── -->
+  <div class="import-panel" id="ipanel-csv">
+    <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:14px 16px;margin-bottom:18px;font-size:13px;color:#92400e">
+      <strong>Formatos aceitos:</strong> CSV (separado por vírgula ou ponto-e-vírgula) e Excel (.xlsx). A primeira linha deve conter os cabeçalhos. Qualquer ordem de colunas é aceita — você mapeará cada coluna para o campo correto.
+    </div>
+
+    <div class="drop-zone" id="csv-drop"
+      ondragover="event.preventDefault();this.classList.add('drag')"
+      ondragleave="this.classList.remove('drag')"
+      ondrop="handleCsvDrop(event)"
+      onclick="document.getElementById('csv-file-input').click()">
+      <div class="drop-zone-icon">📄</div>
+      <div class="drop-zone-text">Arraste o arquivo aqui ou clique para selecionar</div>
+      <div class="drop-zone-sub">.csv, .xlsx, .xls — máx 5MB</div>
+    </div>
+    <input type="file" id="csv-file-input" accept=".csv,.xlsx,.xls" style="display:none" onchange="handleCsvFile(this.files[0])">
+
+    <div id="csv-preview" style="display:none;margin-top:14px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div style="font-size:13px;font-weight:600">Prévia <span id="csv-count" style="color:var(--muted);font-weight:400"></span></div>
+      </div>
+
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:10px">
+        <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Mapeamento de Colunas</div>
+        <div id="csv-col-mapping" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px"></div>
+      </div>
+
+      <div class="preview-table-wrap">
+        <table class="preview-table">
+          <thead id="csv-preview-thead"></thead>
+          <tbody id="csv-preview-tbody"></tbody>
+        </table>
+      </div>
+
+      <div class="import-result" id="csv-result"></div>
+
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px;padding-top:14px;border-top:1px solid var(--border)">
+        <button class="btn btn-ghost" onclick="resetImportCsv()">↺ Limpar</button>
+        <button class="btn btn-primary" id="btn-import-csv" onclick="importarCsv()">
+          ⬆ Importar <span id="csv-import-count"></span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+ </div>
+</div>
+
+<!-- ═══════ MODAL: ADICIONAR/EDITAR RECRUTA ═══════ -->
+<div class="backdrop" id="modal-recruta-bd">
+ <div class="modal modal-wide">
+  <div class="modal-hd">
+    <div class="modal-title" id="modal-rec-titulo">+ Adicionar Militar</div>
+    <button class="modal-x" onclick="fecharModal('modal-recruta-bd')">✕</button>
+  </div>
+
+  <div style="display:grid;grid-template-columns:120px 1fr;gap:20px;align-items:start">
+    <!-- Foto -->
+    <div class="foto-wrap">
+      <div class="foto-preview" id="foto-preview-wrap" onclick="document.getElementById('foto-input').click()">
+        <span id="foto-placeholder">👤</span>
+        <img id="foto-preview-img" src="" style="display:none">
+      </div>
+      <div class="foto-label" onclick="document.getElementById('foto-input').click()">Clique para selecionar foto</div>
+      <input type="file" id="foto-input" accept="image/*" style="display:none" onchange="previewFoto(this)">
+    </div>
+
+    <!-- Campos principais -->
+    <div>
+      <div class="sec-title">Identificação</div>
+      <div class="form-grid">
+        <div class="fg">
+          <label class="flbl">Nome de Guerra *</label>
+          <input class="fctrl" id="f-guerra" placeholder="Ex: SANTOS" maxlength="60">
+          <span class="ferr" id="e-guerra">Obrigatório</span>
+        </div>
+        <div class="fg">
+          <label class="flbl">CPF</label>
+          <input class="fctrl" id="f-cpf" placeholder="000.000.000-00" maxlength="14">
+        </div>
+        <div class="fg span2">
+          <label class="flbl">Nome Completo *</label>
+          <input class="fctrl" id="f-nome" placeholder="Nome completo do militar" maxlength="120">
+          <span class="ferr" id="e-nome">Obrigatório</span>
+        </div>
+        <div class="fg">
+          <label class="flbl">Data de Nascimento</label>
+          <input type="date" class="fctrl" id="f-nasc">
+        </div>
+        <div class="fg">
+          <label class="flbl">Telefone</label>
+          <input class="fctrl" id="f-tel" placeholder="(00) 00000-0000" maxlength="20">
+        </div>
+      </div>
+      <div style="margin-top:10px;padding:8px 12px;background:var(--accent-lt);border-radius:7px;border:1px solid #bfdbfe;font-size:12px;color:var(--accent)">
+        ℹ O <strong>Número ID</strong> será gerado automaticamente. Você poderá editá-lo depois na ficha do militar.
+      </div>
+    </div>
+  </div>
+
+  <div class="sec-title">Contatos de Emergência</div>
+
+  <!-- Contato 1 -->
+  <div style="background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:14px 16px;margin-bottom:12px">
+    <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Contato 1</div>
+    <div class="form-grid">
+      <div class="fg">
+        <label class="flbl">Nome</label>
+        <input class="fctrl" id="f-c1n" placeholder="Ex: Maria" maxlength="80">
+      </div>
+      <div class="fg">
+        <label class="flbl">Grau de Parentesco</label>
+        <select class="fctrl" id="f-c1p">
+          <option value="">— Selecione —</option>
+          <option>Pai</option><option>Mãe</option><option>Esposa</option>
+          <option>Esposo</option><option>Companheira</option><option>Companheiro</option>
+          <option>Filho</option><option>Filha</option><option>Irmão</option>
+          <option>Irmã</option><option>Avô</option><option>Avó</option>
+          <option>Tio</option><option>Tia</option><option>Primo</option>
+          <option>Prima</option><option>Amigo</option><option>Outro</option>
+        </select>
+      </div>
+      <div class="fg span2">
+        <label class="flbl">Telefone</label>
+        <input class="fctrl" id="f-c1t" placeholder="(00) 00000-0000" maxlength="20">
+      </div>
+    </div>
+  </div>
+
+  <!-- Contato 2 -->
+  <div style="background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:14px 16px;margin-bottom:4px">
+    <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Contato 2</div>
+    <div class="form-grid">
+      <div class="fg">
+        <label class="flbl">Nome</label>
+        <input class="fctrl" id="f-c2n" placeholder="Ex: João" maxlength="80">
+      </div>
+      <div class="fg">
+        <label class="flbl">Grau de Parentesco</label>
+        <select class="fctrl" id="f-c2p">
+          <option value="">— Selecione —</option>
+          <option>Pai</option><option>Mãe</option><option>Esposa</option>
+          <option>Esposo</option><option>Companheira</option><option>Companheiro</option>
+          <option>Filho</option><option>Filha</option><option>Irmão</option>
+          <option>Irmã</option><option>Avô</option><option>Avó</option>
+          <option>Tio</option><option>Tia</option><option>Primo</option>
+          <option>Prima</option><option>Amigo</option><option>Outro</option>
+        </select>
+      </div>
+      <div class="fg span2">
+        <label class="flbl">Telefone</label>
+        <input class="fctrl" id="f-c2t" placeholder="(00) 00000-0000" maxlength="20">
+      </div>
+    </div>
+  </div>
+
+  <div class="sec-title">Título de Eleitor</div>
+  <div class="form-grid form-grid-3">
+    <div class="fg">
+      <label class="flbl">Número do Título</label>
+      <input class="fctrl" id="f-titulo" placeholder="000000000000" maxlength="20">
+    </div>
+    <div class="fg">
+      <label class="flbl">Zona</label>
+      <input class="fctrl" id="f-zona" placeholder="000" maxlength="10">
+    </div>
+    <div class="fg">
+      <label class="flbl">Seção</label>
+      <input class="fctrl" id="f-secao" placeholder="0000" maxlength="10">
+    </div>
+  </div>
+
+  <div class="modal-ft">
+    <button class="btn btn-ghost" onclick="fecharModal('modal-recruta-bd')">Cancelar</button>
+    <button class="btn btn-primary" id="btn-salvar-rec" onclick="salvarRecrutar()">Salvar Militar</button>
+  </div>
+ </div>
+</div>
+
+<!-- ═══════ MODAL: FICHA DO RECRUTA ═══════ -->
+<div class="backdrop" id="modal-ficha-bd">
+ <div class="modal modal-wide">
+  <div class="modal-hd">
+    <div class="modal-title">Ficha do Recruta</div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="btn btn-ghost btn-sm" id="btn-editar-rec" onclick="editarRecrutaAtual()">✏ Editar</button>
+      <button class="modal-x" onclick="fecharModal('modal-ficha-bd')">✕</button>
+    </div>
+  </div>
+
+  <!-- Topo da ficha -->
+  <div class="ficha-top">
+    <div class="ficha-foto" id="ficha-foto-wrap">
+      <span id="ficha-foto-ph">👤</span>
+      <img id="ficha-foto-img" src="" style="display:none">
+    </div>
+    <div class="ficha-info">
+      <div class="ficha-num" id="ficha-num"></div>
+      <div class="ficha-nome" id="ficha-nome"></div>
+      <div class="ficha-guerra" id="ficha-guerra"></div>
+      <div class="ficha-grid">
+        <div class="ficha-field"><label>Nascimento</label><span id="ficha-nasc">—</span></div>
+        <div class="ficha-field"><label>CPF</label><span id="ficha-cpf">—</span></div>
+        <div class="ficha-field"><label>Telefone</label><span id="ficha-tel">—</span></div>
+        <div class="ficha-field"><label>Contato 1</label><span id="ficha-c1">—</span></div>
+        <div class="ficha-field"><label>Parentesco 1</label><span id="ficha-c1p">—</span></div>
+        <div class="ficha-field"><label>Tel. Contato 1</label><span id="ficha-c1t">—</span></div>
+        <div class="ficha-field"><label>Contato 2</label><span id="ficha-c2">—</span></div>
+        <div class="ficha-field"><label>Parentesco 2</label><span id="ficha-c2p">—</span></div>
+        <div class="ficha-field"><label>Tel. Contato 2</label><span id="ficha-c2t">—</span></div>
+        <div class="ficha-field"><label>Título / Zona / Seção</label><span id="ficha-titulo">—</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
+    <!-- LNC -->
+    <div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div class="sec-title" style="margin:0;border:none;padding:0">📋 Sem Dispensa (LNC)</div>
+        <button class="btn btn-ghost btn-xs" onclick="abrirModalLnc()">+ LNC</button>
+      </div>
+      <div id="ficha-lnc-list"></div>
+    </div>
+
+    <!-- FO -->
+    <div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div class="sec-title" style="margin:0;border:none;padding:0">📝 Fatos Observados</div>
+        <button class="btn btn-ghost btn-xs" onclick="abrirModalFo()">+ FO</button>
+      </div>
+      <div id="ficha-fo-list" class="fo-list"></div>
+    </div>
+  </div>
+
+  <div class="modal-ft" style="justify-content:space-between">
+    <button class="btn btn-danger btn-sm" onclick="excluirRecrutaAtual()">🗑 Excluir Recruta</button>
+    <button class="btn btn-ghost" onclick="fecharModal('modal-ficha-bd')">Fechar</button>
+  </div>
+ </div>
+</div>
+
+<!-- ═══════ MODAL: LNC ═══════ -->
+<div class="backdrop" id="modal-lnc-bd">
+ <div class="modal" style="width:440px">
+  <div class="modal-hd">
+    <div class="modal-title">📋 Registrar LNC</div>
+    <button class="modal-x" onclick="fecharModal('modal-lnc-bd')">✕</button>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:14px">
+    <div class="fg"><label class="flbl">Data de Início *</label><input type="date" class="fctrl" id="lnc-ini"></div>
+    <div class="fg"><label class="flbl">Data de Término *</label><input type="date" class="fctrl" id="lnc-fim"></div>
+    <div class="fg"><label class="flbl">Motivo</label><textarea class="fctrl" id="lnc-motivo" rows="3" placeholder="Descrição do motivo da não concessão…" style="resize:vertical"></textarea></div>
+  </div>
+  <div class="modal-ft">
+    <button class="btn btn-ghost" onclick="fecharModal('modal-lnc-bd')">Cancelar</button>
+    <button class="btn btn-primary" onclick="salvarLnc()">Registrar LNC</button>
+  </div>
+ </div>
+</div>
+
+<!-- ═══════ MODAL: FO ═══════ -->
+<div class="backdrop" id="modal-fo-bd">
+ <div class="modal" style="width:460px">
+  <div class="modal-hd">
+    <div class="modal-title">📝 Registrar Fato Observado</div>
+    <button class="modal-x" onclick="fecharModal('modal-fo-bd')">✕</button>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:14px">
+    <div class="fg">
+      <label class="flbl">Tipo *</label>
+      <div style="display:flex;gap:10px">
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px">
+          <input type="radio" name="fo-tipo" value="positivo" checked> <span style="color:var(--green);font-weight:600">✅ Positivo (FO+)</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px">
+          <input type="radio" name="fo-tipo" value="negativo"> <span style="color:var(--red);font-weight:600">⚠ Negativo (FO−)</span>
+        </label>
+      </div>
+    </div>
+    <div class="fg"><label class="flbl">Data *</label><input type="date" class="fctrl" id="fo-data"></div>
+    <div class="fg"><label class="flbl">Descrição do Fato *</label><textarea class="fctrl" id="fo-desc" rows="4" placeholder="Descreva o fato observado com detalhes…" style="resize:vertical"></textarea></div>
+  </div>
+  <div class="modal-ft">
+    <button class="btn btn-ghost" onclick="fecharModal('modal-fo-bd')">Cancelar</button>
+    <button class="btn btn-primary" onclick="salvarFo()">Registrar FO</button>
+  </div>
+ </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ════════════════════════════════════════════════
+//  CONFIG
+// ════════════════════════════════════════════════
+const API = '';  // mesmo host
+
+// ════════════════════════════════════════════════
+//  ESTADO
+// ════════════════════════════════════════════════
+let recrutaAtualId = null;
+let viewAtual = 'lista';
+let lncTabAtual = 'todas';
+let foTabAtual  = 'todos';
+let _lncData = [];
+let _foData  = [];
+let _editandoRecrutaId = null;
+let _fotoFile = null;
+
+// ════════════════════════════════════════════════
+//  API
+// ════════════════════════════════════════════════
+async function api(path, opts = {}) {
+  const res = await fetch(API + path, {
+    headers: opts.body && !(opts.body instanceof FormData)
+      ? { 'Content-Type': 'application/json' } : {},
+    ...opts,
+  });
+  if (res.status === 204) return null;
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+  return data;
+}
+
+async function checkApi() {
+  try {
+    const h = await api('/health');
+    document.getElementById('api-dot').classList.add('on');
+    document.getElementById('api-txt').textContent = 'Sistema online';
+    document.getElementById('unit-total').textContent = `${h.recrutas} militares cadastrados`;
+  } catch {
+    document.getElementById('api-dot').classList.remove('on');
+    document.getElementById('api-txt').textContent = 'Sistema offline';
+  }
+}
+
+// ════════════════════════════════════════════════
+//  NAVEGAÇÃO
+// ════════════════════════════════════════════════
+const NAV = { painel:'Painel', listagem:'Listagem do Efetivo', lnc:'Sem Dispensa (LNC)', fatos:'Fatos Observados (FO)', configuracoes:'Configurações', ajuda:'Ajuda' };
+
+function navTo(pg) {
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const navEl = document.querySelector(`[data-page="${pg}"]`);
+  if (navEl) navEl.classList.add('active');
+  document.getElementById('page-' + pg)?.classList.add('active');
+  document.getElementById('topbar-title').textContent = NAV[pg] || pg;
+  document.getElementById('btn-add-recruta').style.display = pg === 'listagem' ? '' : 'none';
+
+  if (pg === 'painel')   carregarPainel();
+  if (pg === 'listagem') carregarListagem();
+  if (pg === 'lnc')      carregarLnc();
+  if (pg === 'fatos')    carregarFatos();
+}
+
+document.querySelectorAll('.nav-item[data-page]').forEach(el => {
+  el.addEventListener('click', () => navTo(el.dataset.page));
+});
+
+// ════════════════════════════════════════════════
+//  UTILS
+// ════════════════════════════════════════════════
+function fmtDate(s) {
+  if (!s) return '—';
+  const [y,m,d] = s.split('-');
+  return `${d}/${m}/${y}`;
+}
+function today() { return new Date().toISOString().split('T')[0]; }
+
+function vigBadge(v) {
+  const labels = { vigente:'Vigente', vencida:'Vencida', futura:'Futura' };
+  return `<span class="pill ${v}">${labels[v]||v}</span>`;
+}
+
+function toast(msg, tipo='success') {
+  const t = document.getElementById('toast');
+  t.className = `toast ${tipo} show`;
+  t.textContent = msg;
+  clearTimeout(t._t);
+  t._t = setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+function fecharModal(id) { document.getElementById(id).classList.remove('open'); }
+function abrirModal(id)  { document.getElementById(id).classList.add('open'); }
+
+// ESC fecha modais
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') document.querySelectorAll('.backdrop.open').forEach(b => b.classList.remove('open'));
+});
+document.querySelectorAll('.backdrop').forEach(b => {
+  b.addEventListener('click', e => { if (e.target === b) b.classList.remove('open'); });
+});
+
+// ════════════════════════════════════════════════
+//  FOTO PREVIEW
+// ════════════════════════════════════════════════
+function previewFoto(input) {
+  const file = input.files[0];
+  if (!file) return;
+  _fotoFile = file;
+  const reader = new FileReader();
+  reader.onload = e => {
+    document.getElementById('foto-placeholder').style.display = 'none';
+    const img = document.getElementById('foto-preview-img');
+    img.src = e.target.result;
+    img.style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+}
+
+function fotoUrl(path) {
+  return path ? `/fotos/${path}` : null;
+}
+
+function setFotoEl(wrapId, phId, imgId, fotoPath) {
+  const ph  = document.getElementById(phId);
+  const img = document.getElementById(imgId);
+  if (fotoPath) {
+    img.src = fotoUrl(fotoPath);
+    img.style.display = 'block';
+    ph.style.display  = 'none';
+  } else {
+    img.style.display = 'none';
+    ph.style.display  = 'block';
+  }
+}
+
+// ════════════════════════════════════════════════
+//  PAINEL
+// ════════════════════════════════════════════════
+async function carregarPainel() {
+  try {
+    const d = await api('/api/dashboard');
+    document.getElementById('kpi-total').textContent = d.total;
+    document.getElementById('kpi-lnc').textContent   = d.lncAtivas;
+    document.getElementById('kpi-fop').textContent   = d.foPos;
+    document.getElementById('kpi-fon').textContent   = d.foNeg;
+    document.getElementById('unit-total').textContent = `${d.total} militares cadastrados`;
+
+    // Recentes
+    const tb = document.getElementById('painel-recentes');
+    if (!d.recentes.length) {
+      tb.innerHTML = `<tr class="empty"><td colspan="4">Nenhum recruta cadastrado ainda.</td></tr>`;
+    } else {
+      tb.innerHTML = d.recentes.map(r => `
+        <tr onclick="abrirFicha(${r.id||0})" style="cursor:pointer">
+          <td class="mono" style="color:var(--muted)">${r.numero_id}</td>
+          <td style="font-weight:500">${r.nome_completo}</td>
+          <td style="color:var(--accent)">${r.nome_guerra}</td>
+          <td style="color:var(--muted);font-size:12px">${fmtDate(r.criado_em?.split(' ')[0])}</td>
+        </tr>`).join('');
+    }
+
+    // Gráfico FO
+    const chart = document.getElementById('chart-fo');
+    if (!d.porFO.length) {
+      chart.innerHTML = `<div style="color:var(--muted);font-size:13px;text-align:center;padding:20px">Sem dados de FO</div>`;
+    } else {
+      const maxVal = Math.max(...d.porFO.map(r => r.pos + r.neg), 1);
+      chart.innerHTML = d.porFO.map(r => {
+        const total = r.pos + r.neg || 0;
+        const pPct  = total ? (r.pos / maxVal) * 100 : 0;
+        const nPct  = total ? (r.neg / maxVal) * 100 : 0;
+        return `<div class="bar-row">
+          <div class="bar-label" title="${r.nome_guerra}">${r.nome_guerra}</div>
+          <div class="bar-track">
+            <div class="bar-fill" style="width:${pPct+nPct}%">
+              <div class="bar-pos" style="width:${r.pos+r.neg>0?r.pos/(r.pos+r.neg)*100:0}%"></div>
+              <div class="bar-neg" style="flex:1"></div>
+            </div>
+          </div>
+          <div class="bar-val">+${r.pos}/−${r.neg}</div>
+        </div>`;
+      }).join('');
+    }
+
+    // LNCs painel
+    const lncEl = document.getElementById('painel-lnc-list');
+    if (!d.lncList.length) {
+      lncEl.innerHTML = `<div style="color:var(--muted);font-size:13px;text-align:center;padding:20px">Sem dispensas registradas</div>`;
+    } else {
+      lncEl.innerHTML = d.lncList.map(l => `
+        <div class="lnc-card">
+          <div style="flex:1">
+            <div style="font-weight:600;font-size:13px">${l.nome_guerra} <span style="color:var(--muted);font-weight:400;font-size:11px">${l.nome_completo}</span></div>
+            <div class="lnc-dates">${fmtDate(l.data_inicio)} → ${fmtDate(l.data_fim)}</div>
+            ${l.motivo ? `<div class="lnc-motivo">${l.motivo}</div>` : ''}
+          </div>
+          ${vigBadge(l.vigencia)}
+        </div>`).join('');
+    }
+  } catch(e) {
+    console.error(e);
+    toast('Erro ao carregar painel', 'error');
+  }
+}
+
+// ════════════════════════════════════════════════
+//  LISTAGEM
+// ════════════════════════════════════════════════
+async function carregarListagem() {
+  const busca = document.getElementById('busca')?.value || '';
+  const order = document.getElementById('order')?.value || 'nome_completo';
+  try {
+    const data = await api(`/api/recrutas?busca=${encodeURIComponent(busca)}&order=${order}`);
+    document.getElementById('listagem-count').textContent = `${data.length} recruta(s)`;
+
+    // Vista lista
+    const tbody = document.getElementById('lista-tbody');
+    if (!data.length) {
+      tbody.innerHTML = `<tr class="empty"><td colspan="8">Nenhum recruta encontrado.</td></tr>`;
+    } else {
+      tbody.innerHTML = data.map(r => {
+        const fotoThumb = r.foto_path
+          ? `<div style="width:36px;height:44px;border-radius:5px;overflow:hidden;border:1px solid var(--border);background:var(--surface2);position:relative;flex-shrink:0"><img src="/fotos/${r.foto_path}" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0"></div>`
+          : `<div style="width:36px;height:44px;border-radius:5px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:16px">👤</div>`;
+        const foColor = r.fo_pos > r.fo_neg ? 'var(--green)' : r.fo_neg > r.fo_pos ? 'var(--red)' : 'var(--muted)';
+        return `<tr onclick="abrirFicha(${r.id})">
+          <td>${fotoThumb}</td>
+          <td class="mono" style="color:var(--muted)">${r.numero_id}</td>
+          <td style="font-weight:500">${r.nome_completo}</td>
+          <td style="color:var(--accent);font-weight:600">${r.nome_guerra}</td>
+          <td style="color:var(--muted)">${r.telefone||'—'}</td>
+          <td style="color:${foColor};font-size:12px;font-weight:600">+${r.fo_pos} / −${r.fo_neg}</td>
+          <td>${r.qtd_lnc > 0 ? `<span class="pill vigente">${r.qtd_lnc} LNC</span>` : '<span style="color:var(--muted);font-size:12px">—</span>'}</td>
+          <td><div class="row-acts">
+            <button class="row-btn" onclick="event.stopPropagation();abrirFicha(${r.id})" title="Ver ficha">👁</button>
+            <button class="row-btn" onclick="event.stopPropagation();prepararEditar(${r.id})" title="Editar">✏</button>
+            <button class="row-btn" onclick="event.stopPropagation();excluirRecrutar(${r.id},'${r.nome_completo}')" title="Excluir">🗑</button>
+          </div></td>
+        </tr>`;
+      }).join('');
+    }
+
+    // Vista grid
+    const grid = document.getElementById('grid-container');
+    grid.innerHTML = data.map(r => `
+      <div class="rec-card" onclick="abrirFicha(${r.id})">
+        <div class="rec-card-foto">
+          ${r.foto_path ? `<img src="/fotos/${r.foto_path}" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0">` : '👤'}
+        </div>
+        <div class="rec-card-num">${r.numero_id}</div>
+        <div class="rec-card-nome">${r.nome_completo}</div>
+        <div class="rec-card-guerra">${r.nome_guerra}</div>
+      </div>`).join('') || `<div style="color:var(--muted);font-size:13px;grid-column:1/-1;text-align:center;padding:40px">Nenhum recruta encontrado.</div>`;
+
+  } catch(e) {
+    toast('Erro ao carregar listagem', 'error');
+  }
+}
+
+function setView(v) {
+  viewAtual = v;
+  document.getElementById('view-lista').style.display = v==='lista' ? '' : 'none';
+  document.getElementById('view-grid').style.display  = v==='grid'  ? '' : 'none';
+  document.getElementById('vt-lista').classList.toggle('active', v==='lista');
+  document.getElementById('vt-grid').classList.toggle('active',  v==='grid');
+}
+
+// ════════════════════════════════════════════════
+//  LNC PAGE
+// ════════════════════════════════════════════════
+async function carregarLnc() {
+  try {
+    _lncData = await api('/api/lnc');
+    renderLnc();
+  } catch { toast('Erro ao carregar LNC','error'); }
+}
+
+function setLncTab(t) {
+  lncTabAtual = t;
+  ['todas','vigente','vencida'].forEach(x =>
+    document.getElementById('lnc-tab-'+x).classList.toggle('active', x===t));
+  renderLnc();
+}
+
+function renderLnc() {
+  const dados = lncTabAtual === 'todas'
+    ? _lncData
+    : _lncData.filter(l => l.vigencia === lncTabAtual);
+  const tbody = document.getElementById('lnc-tbody');
+  if (!dados.length) {
+    tbody.innerHTML = `<tr class="empty"><td colspan="7">Nenhuma LNC encontrada.</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = dados.map(l => `
+    <tr>
+      <td style="font-weight:500">${l.nome_completo}</td>
+      <td style="color:var(--accent)">${l.nome_guerra}</td>
+      <td class="mono" style="color:var(--muted)">${l.numero_id}</td>
+      <td>${fmtDate(l.data_inicio)}</td>
+      <td>${fmtDate(l.data_fim)}</td>
+      <td style="color:var(--muted);font-size:12px">${l.motivo||'—'}</td>
+      <td>${vigBadge(l.vigencia)}</td>
+    </tr>`).join('');
+}
+
+// ════════════════════════════════════════════════
+//  FATOS PAGE
+// ════════════════════════════════════════════════
+async function carregarFatos() {
+  try {
+    // Carrega todos os recrutas com seus fatos
+    const recrutas = await api('/api/recrutas');
+    _foData = [];
+    for (const r of recrutas) {
+      const ficha = await api(`/api/recrutas/${r.id}`);
+      ficha.fatos.forEach(f => _foData.push({ ...f, nome_completo: r.nome_completo, nome_guerra: r.nome_guerra }));
+    }
+    _foData.sort((a,b) => b.data.localeCompare(a.data));
+    renderFatos();
+  } catch { toast('Erro ao carregar FO','error'); }
+}
+
+function setFoTab(t) {
+  foTabAtual = t;
+  ['todos','positivo','negativo'].forEach(x =>
+    document.getElementById('fo-tab-'+x).classList.toggle('active', x===t));
+  renderFatos();
+}
+
+function renderFatos() {
+  const dados = foTabAtual === 'todos'
+    ? _foData
+    : _foData.filter(f => f.tipo === foTabAtual);
+  const tbody = document.getElementById('fo-tbody');
+  if (!dados.length) {
+    tbody.innerHTML = `<tr class="empty"><td colspan="5">Nenhum fato observado encontrado.</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = dados.map(f => `
+    <tr>
+      <td style="font-size:12px;color:var(--muted);white-space:nowrap">${fmtDate(f.data)}</td>
+      <td style="font-weight:500">${f.nome_completo}</td>
+      <td style="color:var(--accent)">${f.nome_guerra}</td>
+      <td><span class="pill ${f.tipo}">${f.tipo==='positivo'?'✅ Positivo':'⚠ Negativo'}</span></td>
+      <td style="font-size:13px">${f.descricao}</td>
+    </tr>`).join('');
+}
+
+// ════════════════════════════════════════════════
+//  MODAL RECRUTA – ABRIR/FECHAR
+// ════════════════════════════════════════════════
+function abrirModalRecrutar() {
+  _editandoRecrutaId = null;
+  _fotoFile = null;
+  document.getElementById('modal-rec-titulo').textContent = '+ Adicionar Militar';
+  document.getElementById('btn-salvar-rec').textContent   = 'Salvar Militar';
+  ['f-guerra','f-nome','f-cpf','f-tel','f-c1n','f-c1t','f-c2n','f-c2t','f-titulo','f-zona','f-secao'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  document.getElementById('f-nasc').value = '';
+  document.getElementById('f-c1p').value  = '';
+  document.getElementById('f-c2p').value  = '';
+  document.getElementById('foto-input').value = '';
+  document.getElementById('foto-placeholder').style.display = 'block';
+  document.getElementById('foto-preview-img').style.display = 'none';
+  document.querySelectorAll('.fctrl').forEach(el => el.classList.remove('err'));
+  document.querySelectorAll('.ferr').forEach(el => el.classList.remove('show'));
+  abrirModal('modal-recruta-bd');
+  setTimeout(() => document.getElementById('f-guerra').focus(), 220);
+}
+
+async function prepararEditar(id) {
+  try {
+    const r = await api(`/api/recrutas/${id}`);
+    _editandoRecrutaId = id;
+    _fotoFile = null;
+    document.getElementById('modal-rec-titulo').textContent = '✏ Editar Militar';
+    document.getElementById('btn-salvar-rec').textContent   = 'Salvar Alterações';
+    document.getElementById('f-guerra').value = r.nome_guerra;
+    document.getElementById('f-nome').value   = r.nome_completo;
+    document.getElementById('f-nasc').value   = r.data_nascimento || '';
+    document.getElementById('f-cpf').value    = r.cpf || '';
+    document.getElementById('f-tel').value    = r.telefone || '';
+    document.getElementById('f-titulo').value = r.titulo_eleitor || '';
+    document.getElementById('f-zona').value   = r.zona || '';
+    document.getElementById('f-secao').value  = r.secao || '';
+    // Contatos — campos separados
+    document.getElementById('f-c1n').value = r.contato1_nome || '';
+    document.getElementById('f-c1p').value = r.contato1_parentesco || '';
+    document.getElementById('f-c1t').value = r.contato1_tel || '';
+    document.getElementById('f-c2n').value = r.contato2_nome || '';
+    document.getElementById('f-c2p').value = r.contato2_parentesco || '';
+    document.getElementById('f-c2t').value = r.contato2_tel || '';
+    // Foto
+    if (r.foto_path) {
+      document.getElementById('foto-placeholder').style.display = 'none';
+      const img = document.getElementById('foto-preview-img');
+      img.src = `/fotos/${r.foto_path}`;
+      img.style.display = 'block';
+    } else {
+      document.getElementById('foto-placeholder').style.display = 'block';
+      document.getElementById('foto-preview-img').style.display = 'none';
+    }
+    document.querySelectorAll('.fctrl').forEach(el => el.classList.remove('err'));
+    document.querySelectorAll('.ferr').forEach(el => el.classList.remove('show'));
+    fecharModal('modal-ficha-bd');
+    abrirModal('modal-recruta-bd');
+  } catch(e) { toast('Erro ao carregar dados', 'error'); }
+}
+
+function editarRecrutaAtual() {
+  if (recrutaAtualId) prepararEditar(recrutaAtualId);
+}
+
+function validarRec() {
+  let ok = true;
+  const req = (id, eid) => {
+    if (!document.getElementById(id).value.trim()) {
+      document.getElementById(id).classList.add('err');
+      document.getElementById(eid).classList.add('show');
+      ok = false;
+    }
+  };
+  req('f-guerra', 'e-guerra');
+  req('f-nome',   'e-nome');
+  return ok;
+}
+
+async function salvarRecrutar() {
+  if (!validarRec()) return;
+  const btn = document.getElementById('btn-salvar-rec');
+  btn.disabled = true; btn.textContent = 'Salvando…';
+
+  const payload = {
+    // numero_id omitido — gerado automaticamente pelo servidor
+    nome_guerra:          document.getElementById('f-guerra').value.trim().toUpperCase(),
+    nome_completo:        document.getElementById('f-nome').value.trim(),
+    data_nascimento:      document.getElementById('f-nasc').value || null,
+    cpf:                  document.getElementById('f-cpf').value.trim() || null,
+    telefone:             document.getElementById('f-tel').value.trim() || null,
+    contato1_nome:        document.getElementById('f-c1n').value.trim() || null,
+    contato1_parentesco:  document.getElementById('f-c1p').value.trim() || null,
+    contato1_tel:         document.getElementById('f-c1t').value.trim() || null,
+    contato2_nome:        document.getElementById('f-c2n').value.trim() || null,
+    contato2_parentesco:  document.getElementById('f-c2p').value.trim() || null,
+    contato2_tel:         document.getElementById('f-c2t').value.trim() || null,
+    titulo_eleitor:       document.getElementById('f-titulo').value.trim() || null,
+    zona:                 document.getElementById('f-zona').value.trim() || null,
+    secao:                document.getElementById('f-secao').value.trim() || null,
+  };
+
+  try {
+    let saved;
+    if (_editandoRecrutaId) {
+      saved = await api(`/api/recrutas/${_editandoRecrutaId}`, { method:'PATCH', body: JSON.stringify(payload) });
+    } else {
+      saved = await api('/api/recrutas', { method:'POST', body: JSON.stringify(payload) });
+    }
+
+    // Upload foto se selecionada
+    if (_fotoFile && saved.id) {
+      const fd = new FormData();
+      fd.append('foto', _fotoFile);
+      await fetch(`/api/recrutas/${saved.id}/foto`, { method:'POST', body: fd });
+    }
+
+    toast(_editandoRecrutaId ? '✓ Recruta atualizado!' : '✓ Recruta cadastrado!');
+    fecharModal('modal-recruta-bd');
+    carregarListagem();
+    carregarPainel();
+  } catch(e) {
+    toast('Erro: ' + e.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = _editandoRecrutaId ? 'Salvar Alterações' : 'Salvar Militar';
+  }
+}
+
+// ════════════════════════════════════════════════
+//  FICHA DO RECRUTA
+// ════════════════════════════════════════════════
+async function abrirFicha(id) {
+  recrutaAtualId = id;
+  try {
+    const r = await api(`/api/recrutas/${id}`);
+    document.getElementById('btn-editar-rec').onclick = () => prepararEditar(id);
+
+    // Foto
+    setFotoEl('ficha-foto-wrap','ficha-foto-ph','ficha-foto-img', r.foto_path);
+
+    document.getElementById('ficha-num').textContent    = `Nº ${r.numero_id}`;
+    document.getElementById('ficha-nome').textContent   = r.nome_completo;
+    document.getElementById('ficha-guerra').textContent = r.nome_guerra;
+    document.getElementById('ficha-nasc').textContent   = r.data_nascimento ? fmtDate(r.data_nascimento) : '—';
+    document.getElementById('ficha-cpf').textContent    = r.cpf || '—';
+    document.getElementById('ficha-tel').textContent    = r.telefone || '—';
+    document.getElementById('ficha-c1').textContent     = r.contato1_nome || '—';
+    document.getElementById('ficha-c1p').textContent    = r.contato1_parentesco || '—';
+    document.getElementById('ficha-c1t').textContent    = r.contato1_tel || '—';
+    document.getElementById('ficha-c2').textContent     = r.contato2_nome || '—';
+    document.getElementById('ficha-c2p').textContent    = r.contato2_parentesco || '—';
+    document.getElementById('ficha-c2t').textContent    = r.contato2_tel || '—';
+    document.getElementById('ficha-titulo').textContent = r.titulo_eleitor ? `${r.titulo_eleitor} / Z.${r.zona||'?'} / S.${r.secao||'?'}` : '—';
+
+    // LNCs
+    const lncEl = document.getElementById('ficha-lnc-list');
+    if (!r.lnc.length) {
+      lncEl.innerHTML = `<div style="color:var(--muted);font-size:12px;text-align:center;padding:16px">Sem LNC registrada</div>`;
+    } else {
+      lncEl.innerHTML = r.lnc.map(l => `
+        <div class="lnc-card">
+          <div style="flex:1">
+            <div class="lnc-dates">${fmtDate(l.data_inicio)} → ${fmtDate(l.data_fim)}</div>
+            ${l.motivo ? `<div class="lnc-motivo">${l.motivo}</div>` : ''}
+          </div>
+          ${vigBadge(l.vigencia)}
+          <button class="row-btn" onclick="excluirLnc(${l.id})" title="Excluir">🗑</button>
+        </div>`).join('');
+    }
+
+    // Fatos
+    const foEl = document.getElementById('ficha-fo-list');
+    if (!r.fatos.length) {
+      foEl.innerHTML = `<div style="color:var(--muted);font-size:12px;text-align:center;padding:16px">Sem FO registrado</div>`;
+    } else {
+      foEl.innerHTML = r.fatos.map(f => `
+        <div class="fo-card ${f.tipo}">
+          <div class="fo-card-top">
+            <span class="pill ${f.tipo}">${f.tipo==='positivo'?'✅ FO+':'⚠ FO−'}</span>
+            <div style="display:flex;align-items:center;gap:6px">
+              <span class="fo-card-date">${fmtDate(f.data)}</span>
+              <button class="row-btn" onclick="excluirFo(${f.id})" title="Excluir" style="opacity:1">🗑</button>
+            </div>
+          </div>
+          <div class="fo-desc">${f.descricao}</div>
+        </div>`).join('');
+    }
+
+    abrirModal('modal-ficha-bd');
+  } catch(e) { toast('Erro ao carregar ficha','error'); }
+}
+
+// ════════════════════════════════════════════════
+//  LNC – MODAL
+// ════════════════════════════════════════════════
+function abrirModalLnc() {
+  document.getElementById('lnc-ini').value = today();
+  document.getElementById('lnc-fim').value = '';
+  document.getElementById('lnc-motivo').value = '';
+  abrirModal('modal-lnc-bd');
+}
+
+async function salvarLnc() {
+  const ini = document.getElementById('lnc-ini').value;
+  const fim = document.getElementById('lnc-fim').value;
+  if (!ini || !fim) { toast('Informe início e término','error'); return; }
+  if (fim < ini)    { toast('Término deve ser após o início','error'); return; }
+  try {
+    await api(`/api/recrutas/${recrutaAtualId}/lnc`, {
+      method: 'POST',
+      body: JSON.stringify({ data_inicio:ini, data_fim:fim, motivo: document.getElementById('lnc-motivo').value.trim()||null })
+    });
+    toast('✓ LNC registrada!');
+    fecharModal('modal-lnc-bd');
+    abrirFicha(recrutaAtualId);
+    carregarPainel();
+  } catch(e) { toast('Erro: '+e.message,'error'); }
+}
+
+async function excluirLnc(id) {
+  if (!confirm('Excluir esta LNC?')) return;
+  await api(`/api/lnc/${id}`, {method:'DELETE'});
+  toast('LNC excluída','info');
+  abrirFicha(recrutaAtualId);
+  carregarPainel();
+}
+
+// ════════════════════════════════════════════════
+//  FO – MODAL
+// ════════════════════════════════════════════════
+function abrirModalFo() {
+  document.getElementById('fo-data').value = today();
+  document.getElementById('fo-desc').value = '';
+  document.querySelector('[name="fo-tipo"][value="positivo"]').checked = true;
+  abrirModal('modal-fo-bd');
+}
+
+async function salvarFo() {
+  const tipo = document.querySelector('[name="fo-tipo"]:checked')?.value;
+  const data = document.getElementById('fo-data').value;
+  const desc = document.getElementById('fo-desc').value.trim();
+  if (!tipo||!data||!desc) { toast('Preencha todos os campos','error'); return; }
+  try {
+    await api(`/api/recrutas/${recrutaAtualId}/fatos`, {
+      method:'POST', body: JSON.stringify({tipo,data,descricao:desc})
+    });
+    toast('✓ FO registrado!');
+    fecharModal('modal-fo-bd');
+    abrirFicha(recrutaAtualId);
+    carregarPainel();
+  } catch(e) { toast('Erro: '+e.message,'error'); }
+}
+
+async function excluirFo(id) {
+  if (!confirm('Excluir este FO?')) return;
+  await api(`/api/fatos/${id}`, {method:'DELETE'});
+  toast('FO excluído','info');
+  abrirFicha(recrutaAtualId);
+  carregarPainel();
+}
+
+// ════════════════════════════════════════════════
+//  EXCLUIR RECRUTA
+// ════════════════════════════════════════════════
+async function excluirRecrutaAtual() {
+  const nome = document.getElementById('ficha-nome').textContent;
+  if (!confirm(`Excluir o recruta "${nome}"?\nTodos os dados (LNC, FO, foto) serão removidos permanentemente.`)) return;
+  try {
+    await api(`/api/recrutas/${recrutaAtualId}`, {method:'DELETE'});
+    toast('Recruta excluído','info');
+    fecharModal('modal-ficha-bd');
+    carregarListagem();
+    carregarPainel();
+  } catch(e) { toast('Erro: '+e.message,'error'); }
+}
+
+async function excluirRecrutar(id, nome) {
+  if (!confirm(`Excluir o recruta "${nome}"?\nTodos os dados serão removidos permanentemente.`)) return;
+  try {
+    await api(`/api/recrutas/${id}`, {method:'DELETE'});
+    toast('Recruta excluído','info');
+    carregarListagem();
+    carregarPainel();
+  } catch(e) { toast('Erro: '+e.message,'error'); }
+}
+
+// ════════════════════════════════════════════════
+//  IMPORTAÇÃO — CAMPOS DO SISTEMA
+// ════════════════════════════════════════════════
+
+// Campos do sistema e seus aliases reconhecidos automaticamente
+// NOTA: numero_id, nome_completo e nome_guerra são mapeados como __ignorar__
+// no fluxo do Google Forms para evitar conflitos de unicidade/formato.
+// O usuário pode remapear manualmente se precisar.
+const CAMPO_ALIASES = {
+  data_nascimento:      ['nascimento', 'data nasc', 'data de nascimento', 'dt nasc', 'birthday', 'data_nascimento', 'nasc', 'data nasc.'],
+  cpf:                  ['cpf', 'documento', 'doc', 'cadastro de pessoa', 'cadastro pessoa física'],
+  telefone:             ['telefone', 'tel', 'fone', 'celular', 'phone', 'telefone pessoal', 'número de celular', 'celular pessoal'],
+  contato1_nome:        ['contato 1', 'nome contato 1', 'nome do contato 1', 'emergência 1 nome', 'resp 1', 'responsável 1 nome', 'primeiro contato nome', '1º contato nome', 'emerg 1 nome'],
+  contato1_parentesco:  ['parentesco 1', 'grau 1', 'grau de parentesco 1', 'parentesco contato 1', 'relação 1', '1º parentesco', 'emerg 1 parentesco'],
+  contato1_tel:         ['tel contato 1', 'telefone contato 1', 'fone emergência 1', 'celular contato 1', 'tel. 1', 'telefone 1', 'emerg 1 tel'],
+  contato2_nome:        ['contato 2', 'nome contato 2', 'nome do contato 2', 'emergência 2 nome', 'resp 2', 'responsável 2 nome', 'segundo contato nome', '2º contato nome', 'emerg 2 nome'],
+  contato2_parentesco:  ['parentesco 2', 'grau 2', 'grau de parentesco 2', 'parentesco contato 2', 'relação 2', '2º parentesco', 'emerg 2 parentesco'],
+  contato2_tel:         ['tel contato 2', 'telefone contato 2', 'fone emergência 2', 'celular contato 2', 'tel. 2', 'telefone 2', 'emerg 2 tel'],
+  titulo_eleitor:       ['título', 'titulo', 'título de eleitor', 'eleitor', 'titulo eleitor', 'nº título', 'número do título'],
+  zona:                 ['zona', 'zona eleitoral'],
+  secao:                ['seção', 'secao', 'seção eleitoral', 'sessão'],
+};
+
+const CAMPOS_BLOQUEADOS_FORMS = new Set(['numero_id','nome_completo','nome_guerra']);
+
+const CAMPO_LABELS = {
+  numero_id:           'Número ID',
+  nome_completo:       'Nome Completo',
+  nome_guerra:         'Nome de Guerra',
+  data_nascimento:     'Data de Nascimento',
+  cpf:                 'CPF',
+  telefone:            'Telefone',
+  contato1_nome:       'Contato 1 – Nome',
+  contato1_parentesco: 'Contato 1 – Parentesco',
+  contato1_tel:        'Contato 1 – Telefone',
+  contato2_nome:       'Contato 2 – Nome',
+  contato2_parentesco: 'Contato 2 – Parentesco',
+  contato2_tel:        'Contato 2 – Telefone',
+  titulo_eleitor:      'Título de Eleitor',
+  zona:                'Zona',
+  secao:               'Seção',
+};
+
+function detectarCampo(header, bloquearCamposIdentificacao = false) {
+  const h = header.toLowerCase().trim();
+  for (const [campo, aliases] of Object.entries(CAMPO_ALIASES)) {
+    // Se estiver no modo Forms e o campo for bloqueado, pula
+    if (bloquearCamposIdentificacao && CAMPOS_BLOQUEADOS_FORMS.has(campo)) continue;
+    if (aliases.some(a => h.includes(a) || a.includes(h))) return campo;
+  }
+  return '__ignorar__';
+}
+
+function construirMapeamento(headers, containerId, bloquearIdentificacao = false) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = headers.map((h, i) => {
+    const detected = detectarCampo(h, bloquearIdentificacao);
+    const opts = [['__ignorar__','— Ignorar —'], ...Object.entries(CAMPO_LABELS)]
+      .map(([v, l]) => `<option value="${v}"${v===detected?' selected':''}>${l}</option>`).join('');
+    return `<div class="fg">
+      <label class="flbl" style="font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${h}">${h}</label>
+      <select class="col-map-sel" data-col="${i}">${opts}</select>
+    </div>`;
+  }).join('');
+  // Aviso se identificação bloqueada
+  if (bloquearIdentificacao) {
+    container.insertAdjacentHTML('beforeend', `
+      <div class="fg" style="grid-column:1/-1;margin-top:4px">
+        <div style="font-size:11px;color:var(--yellow);background:#fffbeb;border:1px solid #fde68a;border-radius:6px;padding:8px 10px">
+          ⚠ <strong>Número ID, Nome Completo e Nome de Guerra</strong> estão sendo ignorados automaticamente para evitar conflitos.
+          Adicione-os manualmente se necessário, ou use a opção "Arquivo CSV/Excel" para importar com todos os campos.
+        </div>
+      </div>`);
+  }
+}
+
+function lerMapeamento(containerId) {
+  const map = {};
+  document.querySelectorAll(`#${containerId} .col-map-sel`).forEach(sel => {
+    if (sel.value !== '__ignorar__') map[sel.value] = +sel.dataset.col;
+  });
+  return map;
+}
+
+function linhasParaMilitares(linhas, mapa) {
+  return linhas.filter(l => l.some(c => c?.toString().trim())).map(linha => {
+    const obj = {};
+    for (const [campo, idx] of Object.entries(mapa)) {
+      let val = linha[idx]?.toString().trim() || null;
+      // normaliza data: DD/MM/YYYY → YYYY-MM-DD
+      if (campo === 'data_nascimento' && val) {
+        const m = val.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+        if (m) val = `${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`;
+      }
+      obj[campo] = val;
+    }
+    return obj;
+  }).filter(o => o.numero_id || o.nome_completo || o.cpf || o.telefone);
+}
+
+async function importarLote(militares, resultId) {
+  const resEl = document.getElementById(resultId);
+  resEl.classList.add('show');
+  resEl.innerHTML = `<span style="color:var(--muted)">⏳ Importando ${militares.length} registros…</span>`;
+
+  let ok = 0, erros = [];
+  for (const m of militares) {
+    // Garante campos obrigatórios mínimos
+    if (!m.nome_completo) m.nome_completo = m.cpf || m.telefone || `Importado-${Date.now()}`;
+    if (!m.nome_guerra)   m.nome_guerra   = (m.nome_completo || '').split(' ')[0].toUpperCase() || 'IMPORTADO';
+    // numero_id: omitido → gerado pelo servidor automaticamente
+    delete m.numero_id;
+    try {
+      await api('/api/recrutas', { method: 'POST', body: JSON.stringify(m) });
+      ok++;
+    } catch(e) {
+      erros.push(`${m.nome_completo}: ${e.message}`);
+    }
+  }
+
+  resEl.innerHTML = `
+    <div class="ok">✓ ${ok} militar(es) importado(s) com sucesso!</div>
+    ${erros.length ? `<div class="err" style="margin-top:8px">✗ ${erros.length} erro(s):</div>
+    <ul style="margin-top:6px;padding-left:18px;font-size:12px;color:var(--red)">${erros.map(e=>`<li>${e}</li>`).join('')}</ul>` : ''}
+  `;
+  if (ok > 0) { carregarListagem(); carregarPainel(); toast(`✓ ${ok} militar(es) importado(s)!`); }
+  return ok;
+}
+
+// ── TABS ──
+function setImportTab(tab) {
+  ['forms','csv'].forEach(t => {
+    document.getElementById('itab-'+t).classList.toggle('active', t===tab);
+    document.getElementById('ipanel-'+t).classList.toggle('active', t===tab);
+  });
+}
+
+// ════════════════════════════════════════════════
+//  IMPORTAÇÃO — GOOGLE SHEETS / CSV URL
+// ════════════════════════════════════════════════
+let _sheetsData = [];
+
+async function buscarSheets() {
+  let url = document.getElementById('sheets-url').value.trim();
+  if (!url) { toast('Cole o link da planilha','error'); return; }
+
+  // Converte link normal do Google Sheets para CSV público
+  // Aceita vários formatos:
+  // https://docs.google.com/spreadsheets/d/ID/edit → pub?output=csv
+  // https://docs.google.com/spreadsheets/d/ID/pub?output=csv → usa direto
+  // https://docs.google.com/spreadsheets/d/ID/pubhtml → converte
+  if (url.includes('docs.google.com/spreadsheets')) {
+    const idMatch = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+    if (idMatch) {
+      const gid = url.match(/gid=(\d+)/)?.[1] || '0';
+      url = `https://docs.google.com/spreadsheets/d/${idMatch[1]}/export?format=csv&gid=${gid}`;
+    }
+  }
+  // Para Google Forms respostas (já exportadas como sheet pública)
+  // ou URL do tipo /pub?output=csv — usa direto
+
+  const btn = document.querySelector('#ipanel-forms .btn-primary');
+  btn.disabled = true; btn.textContent = 'Buscando…';
+
+  try {
+    // Usa um proxy CORS se necessário. Tenta direto primeiro.
+    let resp = await fetch(url);
+    if (!resp.ok) throw new Error('Não foi possível acessar a planilha');
+    const text = await resp.text();
+    const linhas = parseCsvText(text);
+    if (linhas.length < 2) throw new Error('Planilha vazia ou sem dados');
+
+    _sheetsData = linhas;
+    renderSheetsPreview(linhas);
+  } catch(e) {
+    toast(`Erro: ${e.message}. Verifique se a planilha está pública.`, 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Buscar →';
+  }
+}
+
+function renderSheetsPreview(linhas) {
+  const [headers, ...rows] = linhas;
+  document.getElementById('sheets-count').textContent = `— ${rows.length} linha(s)`;
+  document.getElementById('sheets-import-count').textContent = `(${rows.length})`;
+
+  // Forms: bloqueia detecção automática de numero_id / nome_completo / nome_guerra
+  construirMapeamento(headers, 'col-mapping', true);
+
+  // Thead
+  document.getElementById('preview-thead').innerHTML =
+    `<tr>${headers.map(h=>`<th>${h}</th>`).join('')}</tr>`;
+  // Tbody (primeiros 5)
+  document.getElementById('preview-tbody').innerHTML =
+    rows.slice(0,5).map(r=>`<tr>${r.map(c=>`<td>${c||''}</td>`).join('')}</tr>`).join('');
+
+  document.getElementById('sheets-preview').style.display = 'block';
+}
+
+async function importarSheets() {
+  const mapa = lerMapeamento('col-mapping');
+  if (!mapa.numero_id && !mapa.nome_completo) {
+    toast('Mapeie pelo menos "Número ID" ou "Nome Completo"','error'); return;
+  }
+  const [, ...rows] = _sheetsData;
+  const militares = linhasParaMilitares(rows, mapa);
+  document.getElementById('btn-import-sheets').disabled = true;
+  await importarLote(militares, 'sheets-result');
+  document.getElementById('btn-import-sheets').disabled = false;
+}
+
+function resetImportSheets() {
+  _sheetsData = [];
+  document.getElementById('sheets-url').value = '';
+  document.getElementById('sheets-preview').style.display = 'none';
+  document.getElementById('sheets-result').classList.remove('show');
+}
+
+// ════════════════════════════════════════════════
+//  IMPORTAÇÃO — CSV / EXCEL (arquivo local)
+// ════════════════════════════════════════════════
+let _csvData = [];
+
+function handleCsvDrop(e) {
+  e.preventDefault();
+  document.getElementById('csv-drop').classList.remove('drag');
+  const file = e.dataTransfer.files[0];
+  if (file) handleCsvFile(file);
+}
+
+async function handleCsvFile(file) {
+  if (!file) return;
+  const ext = file.name.split('.').pop().toLowerCase();
+
+  document.getElementById('csv-drop').innerHTML =
+    `<div class="drop-zone-icon">⏳</div><div class="drop-zone-text">Lendo arquivo…</div>`;
+
+  try {
+    let linhas;
+    if (ext === 'csv') {
+      const text = await file.text();
+      linhas = parseCsvText(text);
+    } else if (ext === 'xlsx' || ext === 'xls') {
+      linhas = await parseXlsx(file);
+    } else {
+      throw new Error('Formato não suportado. Use .csv ou .xlsx');
+    }
+
+    if (linhas.length < 2) throw new Error('Arquivo vazio ou sem dados');
+    _csvData = linhas;
+    renderCsvPreview(linhas);
+
+    document.getElementById('csv-drop').innerHTML =
+      `<div class="drop-zone-icon">✅</div><div class="drop-zone-text">${file.name}</div><div class="drop-zone-sub">${linhas.length-1} registros encontrados</div>`;
+
+  } catch(e) {
+    toast('Erro ao ler arquivo: ' + e.message, 'error');
+    resetImportCsv();
+  }
+}
+
+function renderCsvPreview(linhas) {
+  const [headers, ...rows] = linhas;
+  document.getElementById('csv-count').textContent = `— ${rows.length} linha(s)`;
+  document.getElementById('csv-import-count').textContent = `(${rows.length})`;
+
+  // CSV/Excel: não bloqueia nenhum campo — usuário pode mapear tudo
+  construirMapeamento(headers, 'csv-col-mapping', false);
+
+  document.getElementById('csv-preview-thead').innerHTML =
+    `<tr>${headers.map(h=>`<th>${h}</th>`).join('')}</tr>`;
+  document.getElementById('csv-preview-tbody').innerHTML =
+    rows.slice(0,5).map(r=>`<tr>${r.map(c=>`<td>${c||''}</td>`).join('')}</tr>`).join('');
+
+  document.getElementById('csv-preview').style.display = 'block';
+}
+
+async function importarCsv() {
+  const mapa = lerMapeamento('csv-col-mapping');
+  if (!mapa.numero_id && !mapa.nome_completo) {
+    toast('Mapeie pelo menos "Número ID" ou "Nome Completo"','error'); return;
+  }
+  const [, ...rows] = _csvData;
+  const militares = linhasParaMilitares(rows, mapa);
+  document.getElementById('btn-import-csv').disabled = true;
+  await importarLote(militares, 'csv-result');
+  document.getElementById('btn-import-csv').disabled = false;
+}
+
+function resetImportCsv() {
+  _csvData = [];
+  document.getElementById('csv-file-input').value = '';
+  document.getElementById('csv-preview').style.display = 'none';
+  document.getElementById('csv-result').classList.remove('show');
+  document.getElementById('csv-drop').innerHTML =
+    `<div class="drop-zone-icon">📄</div>
+     <div class="drop-zone-text">Arraste o arquivo aqui ou clique para selecionar</div>
+     <div class="drop-zone-sub">.csv, .xlsx, .xls — máx 5MB</div>`;
+}
+
+// ════════════════════════════════════════════════
+//  PARSERS
+// ════════════════════════════════════════════════
+function parseCsvText(text) {
+  // Detecta separador: vírgula ou ponto-e-vírgula
+  const firstLine = text.split('\n')[0];
+  const sep = (firstLine.split(';').length > firstLine.split(',').length) ? ';' : ',';
+
+  const linhas = [];
+  let cur = [], field = '', inQ = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (c === '"') {
+      if (inQ && text[i+1] === '"') { field += '"'; i++; }
+      else inQ = !inQ;
+    } else if (c === sep && !inQ) {
+      cur.push(field.trim()); field = '';
+    } else if ((c === '\n' || c === '\r') && !inQ) {
+      if (c === '\r' && text[i+1] === '\n') i++;
+      cur.push(field.trim()); field = '';
+      if (cur.some(f=>f)) linhas.push(cur);
+      cur = [];
+    } else {
+      field += c;
+    }
+  }
+  if (field || cur.length) { cur.push(field.trim()); if(cur.some(f=>f)) linhas.push(cur); }
+  return linhas;
+}
+
+async function parseXlsx(file) {
+  // Usa SheetJS via CDN (carregado dinamicamente)
+  if (!window.XLSX) {
+    await new Promise((res, rej) => {
+      const s = document.createElement('script');
+      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+      s.onload = res; s.onerror = rej;
+      document.head.appendChild(s);
+    });
+  }
+  const buf = await file.arrayBuffer();
+  const wb  = XLSX.read(buf, { type:'array', cellDates:true });
+  const ws  = wb.Sheets[wb.SheetNames[0]];
+  const raw = XLSX.utils.sheet_to_json(ws, { header:1, defval:'' });
+  return raw.filter(r => r.some(c => c !== ''))
+            .map(r => r.map(c => {
+              if (c instanceof Date) return c.toLocaleDateString('pt-BR');
+              return String(c ?? '').trim();
+            }));
+}
+
+// ════════════════════════════════════════════════
+//  Atualiza renderização da tabela com hide-mobile
+// ════════════════════════════════════════════════
+// (override da função carregarListagem para adicionar hide-mobile nas TDs)
+const _origCarregarListagem = carregarListagem;
+// Redefine inline para garantir hide-mobile nas células geradas dinamicamente
+// Já está nas <th>, as <td> herdam o display:none via nth-child no CSS
+
+// ════════════════════════════════════════════════
+//  INIT
+// ════════════════════════════════════════════════
+document.getElementById('topbar-date').textContent =
+  new Date().toLocaleDateString('pt-BR', {weekday:'long',day:'numeric',month:'long',year:'numeric'});
+
+(async () => {
+  await checkApi();
+  await carregarPainel();
+  setInterval(checkApi, 20000);
+})();
+</script>
+</body>
+</html>
