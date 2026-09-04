@@ -1,207 +1,117 @@
-# SGR – Sistema de Gestão de Recrutas 🪖
+# 🪖 SGEM — Sistema de Gestão do Efetivo Militar
 
-Dashboard de controle de efetivo militar — self-hosted, dados locais, zero mensalidade.
+### Dashboard de Controle de Efetivo Militar
 
----
+Sistema web desenvolvido para **controle, organização e acompanhamento do efetivo militar**, centralizando informações de recrutas, licenças, fatos observados e indicadores operacionais em uma única aplicação.
 
-## ✅ Pré-requisito: Node.js
-
-O SGR roda em cima do **Node.js**. Você precisa instalar **uma única vez**.
-
-**Como instalar:**
-1. Acesse **https://nodejs.org**
-2. Clique no botão **"LTS"** (versão recomendada)
-3. Baixe e instale normalmente (Next → Next → Finish)
-4. **Reinicie o computador** após instalar
-
-Para confirmar que instalou certo, abra o Prompt de Comando e digite:
-```
-node --version
-```
-Se aparecer algo como `v20.x.x`, está pronto.
+O SGEM foi projetado para funcionar de forma **self-hosted**, com dados armazenados localmente e sem dependência de serviços externos ou mensalidades.
 
 ---
 
-## ⚡ Início em 1 clique
+## 📌 Sobre o Projeto
 
-### Windows
-Com o Node.js instalado: **duplo clique em `iniciar.bat`**
+O **Sistema de Gestão do Efetivo Militar (SGEM)** foi desenvolvido para facilitar o gerenciamento operacional do efetivo, substituindo controles dispersos por uma aplicação centralizada.
 
-O que o script faz:
-1. Verifica se Node.js está instalado — se não estiver, mostra instruções claras
-2. Instala as dependências automaticamente (apenas na primeira execução, ~1 min)
-3. Abre o navegador em `http://localhost:3030`
+A solução permite cadastrar e consultar recrutas, acompanhar situações de LNC, registrar Fatos Observados e visualizar indicadores através de um dashboard.
 
-> **A janela preta do terminal deve ficar aberta** enquanto o SGR estiver rodando.
-> Para encerrar o sistema, feche essa janela.
-
-### macOS / Linux
-```bash
-chmod +x iniciar.sh
-./iniciar.sh
-```
+O sistema também foi desenvolvido pensando em ambientes onde **controle dos dados, disponibilidade local e simplicidade de implantação** são requisitos importantes.
 
 ---
 
-## 📁 Estrutura
+# 🚀 Funcionalidades
 
-```
-sgr/
-├── backend/
-│   └── server.js        ← Servidor Node.js (API + serve o frontend)
-├── frontend/
-│   └── index.html       ← Interface completa
-├── fotos/               ← Fotos dos recrutas (criada automaticamente)
-├── sgr.db               ← Banco de dados SQLite (criado automaticamente)
-├── package.json         ← Dependências Node
-├── iniciar.bat          ← Inicializador Windows
-├── iniciar.sh           ← Inicializador Mac/Linux
-└── README.md
-```
+## 📊 Dashboard
 
----
+Painel central com visão geral do efetivo:
 
-## 🪖 Funcionalidades
-
-### Painel
 - Total de recrutas cadastrados
-- LNCs ativas (dispensas vigentes agora)
-- Contagem de FO+ e FO−
-- Gráfico de desempenho por recruta (barras FO+/FO−)
-- Lista de dispensas recentes/ativas com status
+- LNCs ativas
+- Contagem de FO+
+- Contagem de FO−
+- Gráfico de desempenho por recruta
+- Dispensas recentes e ativas
 - Últimos recrutas cadastrados
 
-### Listagem do Efetivo
-- Vista em **lista** (tabela) ou **grade** (cards com foto)
-- Busca por nome completo, nome de guerra, número ID, CPF, telefone
-- Ordenação por nome, número ID ou data de cadastro
-- Indicadores rápidos de FO e LNC por recruta
-- Acesso rápido à ficha completa
+---
 
-### Ficha do Recruta (modal)
-Contém todos os dados cadastrados:
+## 👥 Gestão do Efetivo
+
+Listagem completa dos recrutas cadastrados.
+
+### Visualização
+
+- Modo lista/tabela
+- Modo grade com cards e fotos
+- Busca por diferentes campos
+- Ordenação dos registros
+- Indicadores rápidos de FO e LNC
+- Acesso à ficha completa
+
+### Busca
+
+É possível pesquisar por:
+
+- Nome completo
+- Nome de guerra
+- Número de ID
+- CPF
+- Telefone
+
+---
+
+## 🪪 Ficha do Recruta
+
+Cada recruta possui uma ficha completa contendo:
+
 - Foto
-- Número ID, Nome Completo, Nome de Guerra
-- Data de Nascimento, CPF, Telefone
-- 2 Contatos de Emergência
-- Título de Eleitor, Zona, Seção
-- Histórico de LNCs com situação (Vigente / Vencida / Futura)
-- Histórico de FOs (positivos e negativos)
-- Ações: editar, adicionar LNC, adicionar FO, excluir
+- Número de ID
+- Nome completo
+- Nome de guerra
+- Data de nascimento
+- CPF
+- Telefone
+- Contatos de emergência
+- Título de eleitor
+- Zona eleitoral
+- Seção eleitoral
+- Histórico de LNCs
+- Histórico de Fatos Observados
 
-### Sem Dispensa – LNC
-- Listagem de todas as LNCs com filtro por situação
-- Status automático baseado na data atual:
-  - **Vigente**: dispensa ativa hoje
-  - **Vencida**: já passou
-  - **Futura**: ainda não começou
+### Ações disponíveis
 
-### Fatos Observados – FO
-- Listagem de todos os FOs com filtro por tipo
-- FO+ (Fato Observado Positivo)
-- FO− (Fato Observado Negativo)
-
----
-
-## 💾 Backup
-
-Todos os dados ficam em dois lugares:
-- `sgr.db` → banco de dados (recrutas, LNCs, FOs)
-- `fotos/`  → pasta com as fotos dos recrutas
-
-**Para backup completo:** copie a pasta `sgr/` inteira para outro local.
-
-```bash
-# Backup rápido (Windows)
-xcopy /E /I C:\sgr D:\Backup\sgr_%date:~6,4%%date:~3,2%%date:~0,2%
-
-# Backup rápido (Mac/Linux)
-cp -r ~/sgr ~/Backups/sgr_$(date +%Y%m%d)
-```
+- Editar recruta
+- Adicionar LNC
+- Adicionar FO
+- Excluir recruta
 
 ---
 
-## 🌐 API – Endpoints
+# 📋 LNC — Licença Não Concedida
 
-Com o servidor rodando, todos os endpoints abaixo estão disponíveis:
+O sistema permite registrar e acompanhar as LNCs vinculadas a cada recruta.
 
-| Método | Rota | Descrição |
-|--------|------|-----------|
-| GET | `/api/recrutas` | Lista recrutas (filtro: busca, order) |
-| GET | `/api/recrutas/:id` | Ficha completa (com LNC e FO) |
-| POST | `/api/recrutas` | Cadastra novo recruta |
-| PATCH | `/api/recrutas/:id` | Atualiza dados do recruta |
-| DELETE | `/api/recrutas/:id` | Remove recruta |
-| POST | `/api/recrutas/:id/foto` | Upload de foto |
-| GET | `/api/lnc` | Lista todas as LNCs |
-| POST | `/api/recrutas/:id/lnc` | Registra LNC para um recruta |
-| DELETE | `/api/lnc/:id` | Remove uma LNC |
-| POST | `/api/recrutas/:id/fatos` | Registra FO |
-| DELETE | `/api/fatos/:id` | Remove um FO |
-| GET | `/api/dashboard` | Dados do painel |
-| GET | `/health` | Health check |
+Cada registro possui:
 
----
+- Data de início
+- Data de término
+- Motivo
+- Situação
 
-## 🔧 Problemas Comuns
+O status é calculado automaticamente com base na data atual:
 
-**"Porta 3030 já em uso"**
-```bat
-:: Windows
-netstat -ano | findstr :3030
-taskkill /PID <numero> /F
-```
-```bash
-# Mac/Linux
-lsof -ti:3030 | xargs kill
-```
-
-**Erro ao instalar better-sqlite3**
-
-Em alguns casos o `better-sqlite3` precisa compilar código nativo. Se falhar:
-```bash
-npm install --build-from-source
-# ou instale as build tools:
-# Windows: npm install --global windows-build-tools
-# Linux:   sudo apt install build-essential
-```
-
-**Foto não aparece**
-
-Verifique se a pasta `fotos/` existe na raiz do projeto e se o servidor tem permissão de escrita.
-
-**Abrir de outro dispositivo na rede**
-
-O servidor já está configurado para aceitar conexões externas (`0.0.0.0`).
-Descubra seu IP local e acesse `http://SEU_IP:3030` de qualquer dispositivo na mesma rede.
-
----
-
-## 🚀 Iniciar Automaticamente com o Windows
-
-1. Pressione `Win + R` → digite `shell:startup` → Enter
-2. Crie um atalho do `iniciar.bat` nessa pasta
-3. Pronto — o SGR inicia junto com o Windows
-
----
-
-## 📋 Dados que o Sistema Gerencia
-
-| Campo | Descrição |
-|-------|-----------|
-| Número ID | Identificador único do recruta |
-| Nome Completo | Nome civil completo |
-| Nome de Guerra | Nome de uso militar |
-| Data de Nascimento | Para controle de idade |
-| CPF | Documento de identificação |
-| Telefone | Contato direto |
-| Contato 1 e 2 | Familiares/emergência (nome + telefone) |
-| Título de Eleitor | Número, Zona e Seção |
-| Foto | Imagem do recruta |
-| LNC | Licença Não Concedida (data início, término, motivo, situação) |
-| FO+ | Fato Observado Positivo (data + descrição) |
-| FO− | Fato Observado Negativo (data + descrição) |
-
----
-
-*SGR v1.0 — Sistema de controle de efetivo para uso operacional.*
+```text
+┌──────────────┐
+│     LNC      │
+└──────┬───────┘
+       │
+       ├── Data atual dentro do período
+       │        ↓
+       │     VIGENTE
+       │
+       ├── Data final já passou
+       │        ↓
+       │     VENCIDA
+       │
+       └── Data inicial ainda não chegou
+                ↓
+             FUTURA
